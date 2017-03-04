@@ -12,4 +12,4 @@ You can't put your new ships manually. In the begging you only can regenerate ra
 
 ### Screenshots
 
-<img src="https://pp.vk.me/c628723/v628723423/6e7c3/_uH1LNtv_UU.jpg" width="320">
+<img src="https://raw.githubusercontent.com/Aunmag/sea-battle/first-version/screenshots/Sea%20Battle%20v0.7.0%20screenshot%201.jpg" width="320">
