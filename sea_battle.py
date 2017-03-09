@@ -4,17 +4,11 @@
 import random
 import os
 
+import constants
+
 # Configs:
 size = 10
 monitoring = False
-
-# Style:
-s_buffer = "^"
-s_ship = "A"
-s_space = "."
-s_hit = "x"
-s_destroyed = "W"
-s_miss = "*"
 
 # Available ships (quantity, size):
 ships_list = [[1, 4], [2, 3], [3, 2], [4, 1]]
@@ -29,7 +23,7 @@ class Board(object):
 
     def create(self):
         for row in range(size):
-            self.board.append([s_space] * size)
+            self.board.append([constants.CELL_SPACE_EMPTY] * size)
 
     def random(self):
 
@@ -39,10 +33,10 @@ class Board(object):
                 spawning = True
                 while spawning:
 
-                    # Define the refer of ship (0 - x, 1 - y):
-                    global refer
-                    refer = random.randrange(2)
-                    if refer == 0:
+                    # Define the refer of ship (x directed or y directed):
+                    global axis_direction
+                    axis_direction = random.choice((constants.X_AXIS_DIRECTED, constants.Y_AXIS_DIRECTED))
+                    if axis_direction == constants.X_AXIS_DIRECTED:
                         location_y = random.randrange(size)
                         location_x = random.randrange(size - (ship[1] - 1))
                     else:
@@ -52,9 +46,9 @@ class Board(object):
                     # Testing if ship has own space on the board:
                     offset = 0
                     for testing in range(ship[1]):
-                        if refer == 0 and self.board[location_y][location_x + offset] != s_space:
+                        if axis_direction == constants.X_AXIS_DIRECTED and self.board[location_y][location_x + offset] != constants.CELL_SPACE_EMPTY:
                             continue
-                        elif refer == 1 and self.board[location_y + offset][location_x] != s_space:
+                        elif axis_direction == constants.Y_AXIS_DIRECTED and self.board[location_y + offset][location_x] != constants.CELL_SPACE_EMPTY:
                             continue
                         offset += 1
                         if offset == ship[1]:
@@ -64,11 +58,11 @@ class Board(object):
                 offset = 0
                 current_ship = []
                 for marker in range(ship[1]):
-                    if refer == 0:
-                        self.board[location_y][location_x + offset] = s_ship
+                    if axis_direction == constants.X_AXIS_DIRECTED:
+                        self.board[location_y][location_x + offset] = constants.CELL_SHIP_UNIT
                         current_ship.append([location_y, location_x + offset])
                     else:
-                        self.board[location_y + offset][location_x] = s_ship
+                        self.board[location_y + offset][location_x] = constants.CELL_SHIP_UNIT
                         current_ship.append([location_y + offset, location_x])
                     offset += 1
                 self.spawned.append(current_ship)
@@ -79,8 +73,8 @@ class Board(object):
                         b_point_y = unit_point[0] + buffer_point[0]
                         b_point_x = unit_point[1] + buffer_point[1]
                         if b_point_y in range(size) and b_point_x in range(size):
-                            if self.board[b_point_y][b_point_x] == s_space:
-                                self.board[b_point_y][b_point_x] = s_buffer
+                            if self.board[b_point_y][b_point_x] == constants.CELL_SPACE_EMPTY:
+                                self.board[b_point_y][b_point_x] = constants.CELL_SPACE_BUFFER
 
     def updating(self, ship):
         # Creating buffer zone for unit:
@@ -89,10 +83,10 @@ class Board(object):
                 b_point_y = unit[0] + buffer_point[0]
                 b_point_x = unit[1] + buffer_point[1]
                 if b_point_y in range(size) and b_point_x in range(size):
-                    if self.board[b_point_y][b_point_x] == s_buffer:
-                        self.board[b_point_y][b_point_x] = s_miss
-                    elif self.board[b_point_y][b_point_x] == s_hit:
-                        self.board[b_point_y][b_point_x] = s_destroyed
+                    if self.board[b_point_y][b_point_x] == constants.CELL_SPACE_BUFFER:
+                        self.board[b_point_y][b_point_x] = constants.CELL_SPACE_HIT
+                    elif self.board[b_point_y][b_point_x] == constants.CELL_SHIP_DAMAGED:
+                        self.board[b_point_y][b_point_x] = constants.CELL_SHIP_DESTROYED
 
 
 def print_boards():
@@ -109,8 +103,8 @@ def print_boards():
             print(str(n) + " - " + " ".join(str(i) for i in player.board[n]), end=(" " * 2))
             print(str(n) + " - " + " ".join(str(i) for i in ai.board[n]))
         else:
-            print(str(n) + " - " + " ".join(str(i) for i in player.board[n]).replace(s_buffer, s_space), end=(" " * 2))
-            print(str(n) + " - " + " ".join(str(i) for i in ai.board[n]).replace(s_ship, s_space).replace(s_buffer, s_space))
+            print(str(n) + " - " + " ".join(str(i) for i in player.board[n]).replace(constants.CELL_SPACE_BUFFER, constants.CELL_SPACE_EMPTY), end=(" " * 2))
+            print(str(n) + " - " + " ".join(str(i) for i in ai.board[n]).replace(constants.CELL_SHIP_UNIT, constants.CELL_SPACE_EMPTY).replace(constants.CELL_SPACE_BUFFER, constants.CELL_SPACE_EMPTY))
         n += 1
 
 
@@ -125,7 +119,7 @@ def state_of_ships(enemy):
     for d_ship in enemy.spawned:
         damage = 0
         for d_unit in d_ship:
-            if enemy.board[d_unit[0]][d_unit[1]] == s_hit:
+            if enemy.board[d_unit[0]][d_unit[1]] == constants.CELL_SHIP_DAMAGED:
                 damage += 1
         # If the current ship was destroyed:
         if damage == len(d_ship):
@@ -154,8 +148,8 @@ def ai_pass():
             ai_guess_x = random.randrange(size)
 
         # Checking. If hit:
-        if player.board[ai_guess_y][ai_guess_x] == s_ship:
-            player.board[ai_guess_y][ai_guess_x] = s_hit
+        if player.board[ai_guess_y][ai_guess_x] == constants.CELL_SHIP_UNIT:
+            player.board[ai_guess_y][ai_guess_x] = constants.CELL_SHIP_DAMAGED
             state_of_ships(player)
             if destroy:
                 print("\nAI has destroyed your ship (X: %s, Y: %s)." % (ai_guess_x, ai_guess_y))
@@ -164,8 +158,8 @@ def ai_pass():
             break
 
         # Checking. If miss:
-        elif player.board[ai_guess_y][ai_guess_x] == s_space or player.board[ai_guess_y][ai_guess_x] == s_buffer:
-            player.board[ai_guess_y][ai_guess_x] = s_miss
+        elif player.board[ai_guess_y][ai_guess_x] == constants.CELL_SPACE_EMPTY or player.board[ai_guess_y][ai_guess_x] == constants.CELL_SPACE_BUFFER:
+            player.board[ai_guess_y][ai_guess_x] = constants.CELL_SPACE_HIT
             print("\nAI has miss (X: %s, Y: %s)." % (ai_guess_x, ai_guess_y))
             break
 
@@ -179,7 +173,10 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 # Welcome:
-print("Welcome to \"Sea Battle\" BETA version by Aunmag!\n")
+print(
+    "Welcome to the %s v%s by %s!\n"
+    % (constants.TITLE, constants.VERSION, constants.AUTHOR)
+)
 press_ent()
 
 # Board AI creating:
@@ -241,8 +238,8 @@ while game:
             continue
 
         # Checking. If hit:
-        elif ai.board[guess_y][guess_x] == s_ship:
-            ai.board[guess_y][guess_x] = s_hit
+        elif ai.board[guess_y][guess_x] == constants.CELL_SHIP_UNIT:
+            ai.board[guess_y][guess_x] = constants.CELL_SHIP_DAMAGED
             state_of_ships(ai)
             if destroy:
                 print("\nYou've destroyed enemy ship!", end=" ")
@@ -252,8 +249,8 @@ while game:
             break
 
         # Checking. If miss:
-        elif ai.board[guess_y][guess_x] == s_space or ai.board[guess_y][guess_x] == s_buffer:
-            ai.board[guess_y][guess_x] = s_miss
+        elif ai.board[guess_y][guess_x] == constants.CELL_SPACE_EMPTY or ai.board[guess_y][guess_x] == constants.CELL_SPACE_BUFFER:
+            ai.board[guess_y][guess_x] = constants.CELL_SPACE_HIT
             print("\nYou've missed.", end=" ")
             press_ent()
 
