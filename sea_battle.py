@@ -6,42 +6,42 @@ import os
 
 import constants
 
-# Configs:
-size = 10
-monitoring = False
-
-# Available ships (quantity, size):
-ships_list = [[1, 4], [2, 3], [3, 2], [4, 1]]
-
 
 class Board(object):
 
+    size = 10
+    is_monitoring = False
+    ship_list = ((1, 4), (2, 3), (3, 2), (4, 1))  # available ships ((number, size), ...)
+
     def __init__(self):
         self.board = []
-        # Here will be containing spawned ships information:
-        self.spawned = []
+        self.spawned = []  # information abut spawned ships
 
     def create(self):
-        for row in range(size):
-            self.board.append([constants.CELL_SPACE_EMPTY] * size)
+        for row in range(self.size):
+            self.board.append([constants.CELL_SPACE_EMPTY] * self.size)
 
     def random(self):
 
-        for ship in ships_list:
+        for ship in self.ship_list:
             for unit in range(ship[0]):
 
-                spawning = True
-                while spawning:
+                is_spawning = True
+                axis_direction = None  # ship direction (x directed or y directed)
+                ship_size = ship[1]
 
-                    # Define the refer of ship (x directed or y directed):
-                    global axis_direction
-                    axis_direction = random.choice((constants.X_AXIS_DIRECTED, constants.Y_AXIS_DIRECTED))
+                while is_spawning:
+                    # Generate ship direction:
+                    axis_direction = random.choice((
+                        constants.X_AXIS_DIRECTED, constants.Y_AXIS_DIRECTED
+                    ))
+
                     if axis_direction == constants.X_AXIS_DIRECTED:
-                        location_y = random.randrange(size)
-                        location_x = random.randrange(size - (ship[1] - 1))
+                        location_x = random.randrange(self.size - (ship_size - 1))
+                        location_y = random.randrange(self.size)
                     else:
-                        location_y = random.randrange(size - (ship[1] - 1))
-                        location_x = random.randrange(size)
+                        location_x = random.randrange(self.size)
+                        location_y = random.randrange(self.size - (ship_size - 1))
 
                     # Testing if ship has own space on the board:
                     offset = 0
@@ -52,7 +52,7 @@ class Board(object):
                             continue
                         offset += 1
                         if offset == ship[1]:
-                            spawning = False
+                            is_spawning = False
 
                 # Creating ship body:
                 offset = 0
@@ -72,7 +72,7 @@ class Board(object):
                     for buffer_point in ([0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]):
                         b_point_y = unit_point[0] + buffer_point[0]
                         b_point_x = unit_point[1] + buffer_point[1]
-                        if b_point_y in range(size) and b_point_x in range(size):
+                        if b_point_y in range(self.size) and b_point_x in range(self.size):
                             if self.board[b_point_y][b_point_x] == constants.CELL_SPACE_EMPTY:
                                 self.board[b_point_y][b_point_x] = constants.CELL_SPACE_BUFFER
 
@@ -82,7 +82,7 @@ class Board(object):
             for buffer_point in ([0, 0], [0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]):
                 b_point_y = unit[0] + buffer_point[0]
                 b_point_x = unit[1] + buffer_point[1]
-                if b_point_y in range(size) and b_point_x in range(size):
+                if b_point_y in range(self.size) and b_point_x in range(self.size):
                     if self.board[b_point_y][b_point_x] == constants.CELL_SPACE_BUFFER:
                         self.board[b_point_y][b_point_x] = constants.CELL_SPACE_HIT
                     elif self.board[b_point_y][b_point_x] == constants.CELL_SHIP_DAMAGED:
@@ -91,15 +91,15 @@ class Board(object):
 
 def print_boards():
     # Printing top of the scale:
-    print("\n    Your board" + (" " * (size + 5)) + "Enemy board")
-    print("    " + (" ".join(str(i) for i in list(range(size)))), end=(" " * 2))
-    print("    " + (" ".join(str(i) for i in list(range(size)))))
-    print("   " + (" |" * size), end=(" " * 2))
-    print("   " + (" |" * size))
+    print("\n    Your board" + (" " * (Board.size + 5)) + "Enemy board")
+    print("    " + (" ".join(str(i) for i in list(range(Board.size)))), end=(" " * 2))
+    print("    " + (" ".join(str(i) for i in list(range(Board.size)))))
+    print("   " + (" |" * Board.size), end=(" " * 2))
+    print("   " + (" |" * Board.size))
     # Printing left part of scale and board:
     n = 0
-    for i in range(size):
-        if monitoring:
+    for i in range(Board.size):
+        if Board.is_monitoring:
             print(str(n) + " - " + " ".join(str(i) for i in player.board[n]), end=(" " * 2))
             print(str(n) + " - " + " ".join(str(i) for i in ai.board[n]))
         else:
@@ -133,7 +133,7 @@ def ai_pass():
     while ai_guessing:
 
         # Probability of AI intuition (zero is enable):
-        ai_intuition = random.randrange(size * 5)
+        ai_intuition = random.randrange(Board.size * 5)
 
         # AI intuition (dishonest searching for enemy valid ship):
         if ai_intuition == 0:
@@ -144,8 +144,8 @@ def ai_pass():
 
         # AI random guessing:
         else:
-            ai_guess_y = random.randrange(size)
-            ai_guess_x = random.randrange(size)
+            ai_guess_y = random.randrange(Board.size)
+            ai_guess_x = random.randrange(Board.size)
 
         # Checking. If hit:
         if player.board[ai_guess_y][ai_guess_x] == constants.CELL_SHIP_UNIT:
@@ -170,13 +170,19 @@ def ai_pass():
 
 def clear():
     # Clearing of previous board and text:
-    os.system('cls' if os.name == 'nt' else 'clear')
+    if os.name == 'nt':
+        console_command = 'cls'
+    else:
+        console_command = 'clear'
+
+    os.system(console_command)
 
 # Welcome:
-print(
-    "Welcome to the %s v%s by %s!\n"
-    % (constants.TITLE, constants.VERSION, constants.AUTHOR)
-)
+print("Welcome to the %s v%s by %s!\n" % (
+    constants.TITLE,
+    constants.VERSION,
+    constants.AUTHOR
+))
 press_ent()
 
 # Board AI creating:
@@ -185,88 +191,84 @@ ai.create()
 ai.random()
 
 # Board player creating:
-while True:
+is_intro = True
+while is_intro:
     clear()
     player = Board()
     player.create()
     player.random()
+
     print("\nHIT: Here will be printing information about enemy.")
     print_boards()
     print("\nLook at your board (by left side).")
     print("Press the Enter button to change spawn of your ships again (random).")
-    regenerate = input("Or if you're ready enter \"c\" letter here to continue: ")
-    if str(regenerate.lower()) != "c":
-        continue
-    else:
-        break
+    answer = input("Or if you're ready enter \"c\" letter here to continue: ")
 
-# Board player creating:
-print("\nOk! AI is going to start first. Get ready!\n")
-press_ent()
+    if str(answer.lower()) == "c":
+        print("\nOk! AI is going to start first. Get ready!\n")
+        press_ent()
+        is_intro = False
 
-
-game = True
-while game:
-
+is_game = True
+while is_game:
     clear()
     ai_pass()
     print_boards()
 
-    guessing = True
-    while guessing:
-
-        # Printing information about lost enemy's ships:
-        print("\nEnemy ships remain: " + str(len(ai.spawned)) + ". ", end="")
-        print("Your ships remain: " + str(len(player.spawned)) + ".")
+    is_guessing = True
+    while is_guessing:
+        print("\nEnemy ships remain: %s. Your ships remain: %s." % (
+            len(ai.spawned),
+            len(player.spawned)
+        ))
 
         # Inputting the coordinates to hit:
-        guess_x = input("Choose X (column) position to strike: ")
-        guess_y = input("Choose Y (line) position to strike: ")
+        answer_x = input("Choose X (column) position to strike: ")
+        answer_y = input("Choose Y (line) position to strike: ")
 
         # Checking. If guessing can't be integer:
-        if not guess_x.isdigit() or not guess_y.isdigit():
+        if not answer_x.isdigit() or not answer_y.isdigit():
             print("\nError! You've entered wrong coordinates! Change your choose.")
             continue
 
         # Converting guessing to integer form string:
-        guess_x = int(guess_x)
-        guess_y = int(guess_y)
+        answer_x = int(answer_x)
+        answer_y = int(answer_y)
 
         # Checking. If guessing isn't in the board:
-        if not (guess_x in range(size)) or not (guess_y in range(size)):
+        is_answer_x_on_board = 0 <= answer_x < Board.size
+        is_answer_y_on_board = 0 <= answer_y < Board.size
+        if not is_answer_x_on_board or not is_answer_y_on_board:
             print("\nError! This location is too far to hit it! Change your choose.")
             continue
 
-        # Checking. If hit:
-        elif ai.board[guess_y][guess_x] == constants.CELL_SHIP_UNIT:
-            ai.board[guess_y][guess_x] = constants.CELL_SHIP_DAMAGED
+        cell = ai.board[answer_y][answer_x]
+
+        if cell == constants.CELL_SHIP_UNIT:
+            # Checking. If hit:
+            ai.board[answer_y][answer_x] = constants.CELL_SHIP_DAMAGED
             state_of_ships(ai)
             if destroy:
                 print("\nYou've destroyed enemy ship!", end=" ")
             else:
                 print("\nYou've damaged enemy ship!", end=" ")
+            is_guessing = False
             press_ent()
-            break
-
-        # Checking. If miss:
-        elif ai.board[guess_y][guess_x] == constants.CELL_SPACE_EMPTY or ai.board[guess_y][guess_x] == constants.CELL_SPACE_BUFFER:
-            ai.board[guess_y][guess_x] = constants.CELL_SPACE_HIT
+        elif cell == constants.CELL_SPACE_EMPTY or cell == constants.CELL_SPACE_BUFFER:
+            # Checking. If miss:
+            ai.board[answer_y][answer_x] = constants.CELL_SPACE_HIT
             print("\nYou've missed.", end=" ")
+            is_guessing = False
             press_ent()
-
-        # Checking. If hit the same palace again:
         else:
+            # Checking. If hit the same palace again:
             print("\nYou've already hit to this location, change your choose.")
-            continue
-
-        # Checking. End:
-        break
 
     if len(ai.spawned) == 0:
         input("You are WINNER! You've destroyed all enemy units! Press the Enter to end this game.")
-        break
+        is_game = False
 
     if len(player.spawned) == 0:
         print("You are LOSER! All your units were destroyed.")
         input("Total enemy ships remain: " + str(len(ai.spawned)) + ".")
-        break
+        is_game = False
