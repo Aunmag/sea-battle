@@ -1,4 +1,4 @@
-# Sea Battle <img src="https://img.shields.io/badge/version-0.7.0-green.svg?style=flat"> <img src="https://img.shields.io/badge/last_update-2016.03.12-green.svg?style=flat"> <img src="https://img.shields.io/badge/first_release-2016.03.12-lightgrey.svg?style=flat">
+# Sea Battle <img src="https://img.shields.io/badge/version-0.7.1-green.svg?style=flat"> <img src="https://img.shields.io/badge/last_update-2017.03.09-green.svg?style=flat"> <img src="https://img.shields.io/badge/first_release-2016.03.12-lightgrey.svg?style=flat">
 
 ### About
 
@@ -12,4 +12,4 @@ You can't put your new ships manually. In the begging you only can regenerate ra
 
 ### Screenshots
 
-<img src="https://raw.githubusercontent.com/Aunmag/sea-battle/first-version/screenshots/Sea%20Battle%20v0.7.0%20screenshot%201.jpg" width="320">
+<img src="https://raw.githubusercontent.com/Aunmag/sea-battle/master/screenshots/Sea%20Battle%20v0.7.0%20screenshot%201.jpg" width="320">
