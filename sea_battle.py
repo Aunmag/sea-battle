@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import random
-import os
 
 import constants
+import console_manager
 
 
 class Board(object):
@@ -108,10 +108,6 @@ def print_boards():
         n += 1
 
 
-def press_ent():
-    input("Press the Enter bottom to continue.\n")
-
-
 def state_of_ships(enemy):
     global destroy
     destroy = False
@@ -167,23 +163,13 @@ def ai_pass():
         else:
             continue
 
-
-def clear():
-    # Clearing of previous board and text:
-    if os.name == 'nt':
-        console_command = 'cls'
-    else:
-        console_command = 'clear'
-
-    os.system(console_command)
-
 # Welcome:
 print("Welcome to the %s v%s by %s!\n" % (
     constants.TITLE,
     constants.VERSION,
     constants.AUTHOR
 ))
-press_ent()
+console_manager.press_enter()
 
 # Board AI creating:
 ai = Board()
@@ -193,7 +179,7 @@ ai.random()
 # Board player creating:
 is_intro = True
 while is_intro:
-    clear()
+    console_manager.clear()
     player = Board()
     player.create()
     player.random()
@@ -206,12 +192,12 @@ while is_intro:
 
     if str(answer.lower()) == "c":
         print("\nOk! AI is going to start first. Get ready!\n")
-        press_ent()
+        console_manager.press_enter()
         is_intro = False
 
 is_game = True
 while is_game:
-    clear()
+    console_manager.clear()
     ai_pass()
     print_boards()
 
@@ -253,13 +239,13 @@ while is_game:
             else:
                 print("\nYou've damaged enemy ship!", end=" ")
             is_guessing = False
-            press_ent()
+            console_manager.press_enter()
         elif cell == constants.CELL_SPACE_EMPTY or cell == constants.CELL_SPACE_BUFFER:
             # Checking. If miss:
             ai.board[answer_y][answer_x] = constants.CELL_SPACE_HIT
             print("\nYou've missed.", end=" ")
             is_guessing = False
-            press_ent()
+            console_manager.press_enter()
         else:
             # Checking. If hit the same palace again:
             print("\nYou've already hit to this location, change your choose.")

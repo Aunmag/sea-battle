@@ -1,5 +1,5 @@
 TITLE = 'Sea Battle'
-VERSION = '0.7.1'
+VERSION = '0.7.3'
 AUTHOR = 'Aunmag'
 
 CELL_SHIP_UNIT = 'D'
