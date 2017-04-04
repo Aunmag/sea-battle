@@ -156,14 +156,12 @@ class Board(object):
 
     @classmethod
     def print_headings(cls):
-        # heading_ai = ""
         heading_ai = "AI board"
         heading_player = "Your board"
         heading_player_offset = cls.size * 2 + cls.print_offset - len(heading_ai)
         indentation = ' ' * heading_player_offset
 
         print(heading_ai, end=indentation)
-        # print(end=(' ' * heading_player_offset))
         print(heading_player, end='\n')
 
 
