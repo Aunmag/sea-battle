@@ -1,4 +1,4 @@
-# Sea Battle <img src="https://img.shields.io/badge/version-0.7.3-green.svg?style=flat"> <img src="https://img.shields.io/badge/last_update-2017.03.09-green.svg?style=flat"> <img src="https://img.shields.io/badge/first_release-2016.03.12-lightgrey.svg?style=flat">
+# Sea Battle <img src="https://img.shields.io/badge/version-0.7.0-green.svg?style=flat"> <img src="https://img.shields.io/badge/first_release-2016.03.12-lightgrey.svg?style=flat">
 
 ### About
 
