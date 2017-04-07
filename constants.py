@@ -1,5 +1,5 @@
 TITLE = 'Sea Battle'
-VERSION = '0.7'
+VERSION = '0.7.0'
 AUTHOR = 'Aunmag'
 
 IS_DEBUG = False
