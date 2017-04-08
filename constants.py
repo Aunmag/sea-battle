@@ -1,8 +1,10 @@
+from enum import Enum
+
 TITLE = 'Sea Battle'
 VERSION = '0.7.0'
 AUTHOR = 'Aunmag'
 
-IS_DEBUG = False
+IS_DEBUG = True
 
 CELL_SHIP_UNIT = 'D'
 CELL_SHIP_DAMAGED = 'x'
@@ -21,3 +23,7 @@ HIT_STATUS_MISS_REPEATED = -1
 HIT_STATUS_MISS = 0
 HIT_STATUS_DAMAGED = 1
 HIT_STATUS_DESTROYED = 2
+
+
+class CONSOLE(Enum):
+    WRONG_INPUT = 0
