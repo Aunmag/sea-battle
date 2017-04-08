@@ -4,8 +4,6 @@ TITLE = 'Sea Battle'
 VERSION = '0.7.0'
 AUTHOR = 'Aunmag'
 
-IS_DEBUG = True
-
 CELL_SHIP_UNIT = 'D'
 CELL_SHIP_DAMAGED = 'x'
 CELL_SHIP_DESTROYED = '#'

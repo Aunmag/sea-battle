@@ -328,7 +328,7 @@ class Ship(object):
 
 class AI(object):
 
-    is_super_ai = True
+    is_super_ai = False
 
     def __init__(self):
         self.x_hit = None
@@ -336,13 +336,7 @@ class AI(object):
         self.last_message = ""
 
     def make_turn(self):
-        intuition = random.randrange(Board.size * 5)  # dishonest search for enemy ships
-
-        if self.is_super_ai or intuition == 0:
-            self.choose_hit_position_strictly()
-        else:
-            self.choose_hit_position_randomly()
-
+        self.choose_hit_position_randomly()
         self.hit_position()
 
     def choose_hit_position_strictly(self):
