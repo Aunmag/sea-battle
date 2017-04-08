@@ -58,7 +58,7 @@ def validate_integer(value):
         value = int(value)
     except ValueError:
         print("Error. You have to enter integers. Change your choice.")
-        return CONSOLE.WRONG_INPUT
+        return Console.WRONG_INPUT
     else:
         return value
 
@@ -66,9 +66,9 @@ def validate_integer(value):
 def validate_input(value, choices_quantity):
     value = validate_integer(value)
 
-    if value is CONSOLE.WRONG_INPUT:
+    if value is Console.WRONG_INPUT:
         press_enter()
-        return CONSOLE.WRONG_INPUT
+        return Console.WRONG_INPUT
     elif 0 < value <= choices_quantity:
         return value
     else:
@@ -78,16 +78,16 @@ def validate_input(value, choices_quantity):
         )
         print(message)
         press_enter()
-        return CONSOLE.WRONG_INPUT
+        return Console.WRONG_INPUT
 
 
 def validate_input_coordinate(value, board_size):
     value = validate_integer(value)
 
-    if value is CONSOLE.WRONG_INPUT:
-        return CONSOLE.WRONG_INPUT
+    if value is Console.WRONG_INPUT:
+        return Console.WRONG_INPUT
     elif 0 <= value < board_size:
         return value
     else:
         print("Error! This location is too far to hit! Change your choose.")
-        return CONSOLE.WRONG_INPUT
+        return Console.WRONG_INPUT

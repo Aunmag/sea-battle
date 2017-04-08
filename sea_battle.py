@@ -43,23 +43,23 @@ class Board(object):
                 Ship(self, ship_size)
 
     def check_is_any_ship_hit(self, x, y):
-        hit_status = HIT_STATUS_UNKNOWN
+        hit_status = HitStatus.UNKNOWN
         cell = self.rows[y][x]
 
-        if cell == CELL_SPACE_EMPTY:
-            hit_status = HIT_STATUS_MISS
+        if cell is CELL_SPACE_EMPTY:
+            hit_status = HitStatus.MISS
         elif cell in (CELL_SPACE_HIT, CELL_SHIP_DAMAGED, CELL_SHIP_DESTROYED):
-            hit_status = HIT_STATUS_MISS_REPEATED
-        elif cell == CELL_SHIP_UNIT:
+            hit_status = HitStatus.MISS_REPEATED
+        elif cell is CELL_SHIP_UNIT:
             for ship in self.ships:
                 ship_hit_status = ship.check_is_hit(x, y)
-                if ship_hit_status != HIT_STATUS_MISS:
+                if ship_hit_status is not HitStatus.MISS:
                     hit_status = ship_hit_status
                     break
 
-        if hit_status == HIT_STATUS_MISS:
+        if hit_status is HitStatus.MISS:
             self.rows[y][x] = CELL_SPACE_HIT
-        elif hit_status == HIT_STATUS_DESTROYED:
+        elif hit_status is HitStatus.DESTROYED:
             self.update_status()
 
         return hit_status
@@ -106,7 +106,7 @@ class Board(object):
             row = cls.board_ai.rows[row_index]
             for cell_index in range(cls.size):
                 cell = row[cell_index]
-                if not cls.is_monitoring and cell == CELL_SHIP_UNIT:
+                if not cls.is_monitoring and cell is CELL_SHIP_UNIT:
                     cell = CELL_SPACE_EMPTY
                 print(cell, end=' ')
 
@@ -224,9 +224,9 @@ class Ship(object):
             else:
                 spawn_attempt += 1
 
-            self.axis_direction = random.choice((X_AXIS_DIRECTED, Y_AXIS_DIRECTED))
+            self.axis_direction = random.choice((AxisDirection.X, AxisDirection.Y))
 
-            if self.axis_direction == X_AXIS_DIRECTED:
+            if self.axis_direction is AxisDirection.X:
                 x_range = Board.size - self.size
                 y_range = Board.size
             else:
@@ -245,7 +245,7 @@ class Ship(object):
         is_collision = False
 
         for n in range(self.size):
-            if self.axis_direction == X_AXIS_DIRECTED:
+            if self.axis_direction is AxisDirection.X:
                 x = self.x + n
                 y = self.y
             else:
@@ -260,16 +260,16 @@ class Ship(object):
                     is_y_on_board = 0 <= y_check < Board.size
                     if is_x_on_board and is_y_on_board:
                         cell = self.board.rows[y_check][x_check]
-                        if cell == CELL_SHIP_UNIT:
+                        if cell is CELL_SHIP_UNIT:
                             is_collision = True
                             return is_collision
 
         return is_collision
 
     def check_is_hit(self, hit_x, hit_y):
-        hit_status = HIT_STATUS_MISS
+        hit_status = HitStatus.MISS
 
-        if self.axis_direction == X_AXIS_DIRECTED:
+        if self.axis_direction is AxisDirection.X:
             a1 = self.x
             a2 = hit_x
             b1 = self.y
@@ -283,10 +283,10 @@ class Ship(object):
         if b1 == b2 and a1 <= a2 < a1 + self.size:
             damaged_unit_id = a2 - a1
             self.body_status[damaged_unit_id] = False
-            hit_status = HIT_STATUS_DAMAGED
+            hit_status = HitStatus.DAMAGED
             if not any(self.body_status):
                 self.is_destroyed = True
-                hit_status = HIT_STATUS_DESTROYED
+                hit_status = HitStatus.DESTROYED
                 self.draw_as_destroyed()
             else:
                 self.draw_damage(hit_x, hit_y)
@@ -295,7 +295,7 @@ class Ship(object):
 
     def draw_as_new(self):
         for n in range(self.size):
-            if self.axis_direction == X_AXIS_DIRECTED:
+            if self.axis_direction is AxisDirection.X:
                 x = self.x + n
                 y = self.y
             else:
@@ -305,7 +305,7 @@ class Ship(object):
 
     def draw_as_destroyed(self):
         for n in range(self.size):
-            if self.axis_direction == X_AXIS_DIRECTED:
+            if self.axis_direction is AxisDirection.X:
                 x = self.x + n
                 y = self.y
             else:
@@ -319,7 +319,7 @@ class Ship(object):
                     y_neighbor = y + y_offset
                     if 0 <= x_neighbor < Board.size and 0 <= y_neighbor < Board.size:
                         cell = self.board.rows[y_neighbor][x_neighbor]
-                        if cell == CELL_SPACE_EMPTY:
+                        if cell is CELL_SPACE_EMPTY:
                             self.board.rows[y_neighbor][x_neighbor] = CELL_SPACE_HIT
 
     def draw_damage(self, x, y):
@@ -354,7 +354,7 @@ class AI(object):
                     break
 
             if hit_ship_unit_index is not None:
-                if ship.axis_direction == X_AXIS_DIRECTED:
+                if ship.axis_direction is AxisDirection.X:
                     x_hit = ship.x + hit_ship_unit_index
                     y_hit = ship.y
                 else:
@@ -377,7 +377,7 @@ class AI(object):
             y_hit = random.randrange(Board.size)
             x_hit = random.randrange(Board.size)
             cell = Board.board_player.rows[y_hit][x_hit]
-            if cell == CELL_SHIP_UNIT or cell == CELL_SPACE_EMPTY:
+            if cell is CELL_SHIP_UNIT or cell is CELL_SPACE_EMPTY:
                 is_guessing = False
 
         self.x_hit = x_hit
@@ -386,9 +386,9 @@ class AI(object):
     def hit_position(self):
         hit_status = Board.board_player.check_is_any_ship_hit(self.x_hit, self.y_hit)
 
-        if hit_status == HIT_STATUS_DAMAGED:
+        if hit_status is HitStatus.DAMAGED:
             message = "AI has damaged your ship (X: {}, Y: {})."
-        elif hit_status == HIT_STATUS_DESTROYED:
+        elif hit_status is HitStatus.DESTROYED:
             message = "AI has destroyed your ship (X: {}, Y: {})."
         else:
             message = "AI has miss (X: {}, Y: {})."
@@ -450,22 +450,22 @@ def game():
         hit_x = console_manager.validate_input_coordinate(hit_x, Board.size)
         hit_y = console_manager.validate_input_coordinate(hit_y, Board.size)
 
-        if CONSOLE.WRONG_INPUT in (hit_x, hit_y):
+        if Console.WRONG_INPUT in (hit_x, hit_y):
             console_manager.press_enter()
             continue
 
         hit_status = Board.board_ai.check_is_any_ship_hit(hit_x, hit_y)
 
-        if hit_status == HIT_STATUS_MISS:
+        if hit_status is HitStatus.MISS:
             is_guessing = False
             message = "You've missed."
-        elif hit_status == HIT_STATUS_DAMAGED:
+        elif hit_status is HitStatus.DAMAGED:
             is_guessing = False
             message = "You've damaged enemy ship."
-        elif hit_status == HIT_STATUS_DESTROYED:
+        elif hit_status is HitStatus.DESTROYED:
             is_guessing = False
             message = "You've destroyed enemy ship!"
-        elif hit_status == HIT_STATUS_MISS_REPEATED:
+        elif hit_status is HitStatus.MISS_REPEATED:
             message = "You've already hit this location, change your choose."
         else:
             message = "Error on player turn."
