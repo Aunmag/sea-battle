@@ -16,13 +16,13 @@ class Board(object):
     board_ai = None
     board_player = None
 
-    print_offset = 6
+    text_offset_start = 4
+    text_offset_center = 6
 
     def __init__(self):
-        self.validate_is_monitoring()
         self.validate_size()
 
-        self.rows = []
+        self.rows = []  # actual field (rows of cells)
         self.ships = []  # all spawned ships
 
         self.is_onside = True
@@ -77,16 +77,6 @@ class Board(object):
         self.alive_ships_number = alive_ships_number
 
     @classmethod
-    def validate_is_monitoring(cls):
-        if cls.is_monitoring and not IS_DEBUG:
-            message = (
-                "May not use monitoring without debug mode. "
-                "Monitoring is {} and  debug is {}."
-            )
-            message = message.format(cls.is_monitoring, IS_DEBUG)
-            raise ValueError(message)
-
-    @classmethod
     def validate_size(cls):
         size_limit_min = 10
         size_limit_max = 10
@@ -109,6 +99,9 @@ class Board(object):
         cls.print_horizontal_marks()
 
         for row_index in range(cls.size):
+            # Print left mark:
+            print(f"{row_index} - ", end='')
+
             # Print AI board:
             row = cls.board_ai.rows[row_index]
             for cell_index in range(cls.size):
@@ -118,7 +111,7 @@ class Board(object):
                 print(cell, end=' ')
 
             # Print mark between boards:
-            mark = "- {} -".format(row_index)
+            mark = f"- {row_index} -"
             print(mark, end=' ')
 
             # Print player board:
@@ -127,42 +120,68 @@ class Board(object):
                 cell = row[cell_index]
                 print(cell, end=' ')
 
-            # New line:
-            print()
+            # Print right mark:
+            print(f"- {row_index}")
 
-    @classmethod
-    def print_horizontal_numbers(cls):
-        for n in range(cls.size):
-            print(n, end=' ')
-
-        print(end=(' ' * cls.print_offset))
-
-        for n in range(cls.size):
-            print(n, end=' ')
-
-        print()
-
-    @classmethod
-    def print_horizontal_marks(cls):
-        for n in range(cls.size):
-            print('|', end=' ')
-
-        print(end=(' ' * cls.print_offset))
-
-        for n in range(cls.size):
-            print('|', end=' ')
-
-        print()
+        cls.print_horizontal_marks()
+        cls.print_horizontal_numbers()
 
     @classmethod
     def print_headings(cls):
-        heading_ai = "AI board"
-        heading_player = "Your board"
-        heading_player_offset = cls.size * 2 + cls.print_offset - len(heading_ai)
+        cls.print_offset_start()
+
+        def get_ship_message(ships_quantity):
+            if ships_quantity == 1:
+                return "ship"
+            else:
+                return "ships"
+
+        ships_ai = Board.board_ai.alive_ships_number
+        ships_player = Board.board_player.alive_ships_number
+
+        heading_ai = f"AI ({ships_ai} {get_ship_message(ships_ai)})"
+        heading_player = f"You ({ships_player} {get_ship_message(ships_player)})"
+        heading_player_offset = cls.size * 2 + cls.text_offset_center - len(heading_ai)
         indentation = ' ' * heading_player_offset
 
         print(heading_ai, end=indentation)
         print(heading_player, end='\n')
+
+    @classmethod
+    def print_horizontal_marks(cls):
+        cls.print_offset_start()
+
+        for n in range(cls.size):
+            print('|', end=' ')
+
+        cls.print_offset_center()
+
+        for n in range(cls.size):
+            print('|', end=' ')
+
+        print()
+
+    @classmethod
+    def print_horizontal_numbers(cls):
+        cls.print_offset_start()
+
+        for n in range(cls.size):
+            print(n, end=' ')
+
+        cls.print_offset_center()
+
+        for n in range(cls.size):
+            print(n, end=' ')
+
+        print()
+
+    @classmethod
+    def print_offset_start(cls):
+        print(end=(' ' * cls.text_offset_start))
+
+    @classmethod
+    def print_offset_center(cls):
+        print(end=(' ' * cls.text_offset_start))
 
 
 class Ship(object):
@@ -309,7 +328,7 @@ class Ship(object):
 
 class AI(object):
 
-    is_super_ai = False
+    is_super_ai = True
 
     def __init__(self):
         self.x_hit = None
@@ -383,97 +402,99 @@ class AI(object):
         self.last_message = message.format(self.x_hit, self.y_hit)
 
 
-# Welcome:
-print("Welcome to the {} v{} by {}!\n".format(TITLE, VERSION, AUTHOR))
-console_manager.press_enter()
+is_intro = True
+is_game = True
 
 ai = AI()
 Board.board_ai = Board()
+Board.board_player = Board()
 
 
-is_intro = True
-while is_intro:
-    console_manager.clear()
-    Board.board_player = Board()
-
+def intro():
     Board.print_boards()
-    print("\nHIT: Here will be printing information about enemy.")
-    print("\nLook at your board (by right side).")
-    print("Press the Enter button to change spawn of your ships again (random).")
-    answer = input("Or if you're ready enter \"c\" letter here to continue: ")
 
-    if str(answer.lower()) == "c":
-        print("\nOk! AI is going to start first. Get ready!\n")
-        console_manager.press_enter()
+    print(f"\nWelcome to the {TITLE} v{VERSION} by {AUTHOR}!")
+
+    input_value = console_manager.request_input("Main Menu", (
+        "Shuffle ships",
+        "Start game",
+        "Exit game",
+    ))
+
+    global is_intro
+    global is_game
+
+    if input_value == 1:
+        Board.board_player = Board()  # Generate player board again
+    elif input_value == 2:
         is_intro = False
+        print("\nOk! AI is going to start first. Get ready!")
+        console_manager.press_enter()
+    elif input_value == 3:
+        is_intro = False
+        is_game = False
 
 
-is_game = True
-while is_game:
+def game():
     ai.make_turn()
     Board.print_boards()
     print('\n' + ai.last_message)
 
+    global is_game
+
     if not Board.board_player.is_onside:
-        print("You are LOSER! All your units were destroyed.")
-        input("Total enemy ships remain: {}.".format(Board.board_ai.alive_ships_number))
+        print("You were defeated. All your ships are destroyed.")
+        console_manager.press_enter()
         is_game = False
-        is_guessing = False
-    else:
-        is_guessing = True
+        return
 
+    is_guessing = True
     while is_guessing:
-        message = "\nEnemy ships remain: {}. Your ships remain: {}."
-        message = message.format(
-            Board.board_ai.alive_ships_number,
-            Board.board_player.alive_ships_number,
-        )
-        print(message)
+        hit_x = input("Choose X (column) to strike: ")
+        hit_y = input("Choose Y (line) to strike: ")
 
-        # Inputting the coordinates to hit:
-        answer_x = input("Choose X (column) position to strike: ")
-        answer_y = input("Choose Y (line) position to strike: ")
+        hit_x = console_manager.validate_input_coordinate(hit_x, Board.size)
+        hit_y = console_manager.validate_input_coordinate(hit_y, Board.size)
 
-        # Checking. If guessing can't be integer:
-        if not answer_x.isdigit() or not answer_y.isdigit():
-            print("\nError! You've entered wrong coordinates! Change your choose.")
-            continue
-
-        # Converting guessing to integer form string:
-        hit_x = int(answer_x)
-        hit_y = int(answer_y)
-
-        # Checking. If guessing isn't in the board:
-        is_answer_x_on_board = 0 <= hit_x < Board.size
-        is_answer_y_on_board = 0 <= hit_y < Board.size
-        if not is_answer_x_on_board or not is_answer_y_on_board:
-            print("\nError! This location is too far to hit it! Change your choose.")
+        if CONSOLE.WRONG_INPUT in (hit_x, hit_y):
+            console_manager.press_enter()
             continue
 
         hit_status = Board.board_ai.check_is_any_ship_hit(hit_x, hit_y)
 
         if hit_status == HIT_STATUS_MISS:
+            is_guessing = False
             message = "You've missed."
         elif hit_status == HIT_STATUS_DAMAGED:
-            message = "You've damaged enemy ship!"
+            is_guessing = False
+            message = "You've damaged enemy ship."
         elif hit_status == HIT_STATUS_DESTROYED:
+            is_guessing = False
             message = "You've destroyed enemy ship!"
         elif hit_status == HIT_STATUS_MISS_REPEATED:
-            message = "You've already hit to this location, change your choose."
+            message = "You've already hit this location, change your choose."
         else:
-            message = None
-            details = "Player turn."
-            console_manager.raise_wrong_hit_status(hit_status, hit_x, hit_y, details)
-
-        if hit_status != HIT_STATUS_MISS_REPEATED:
-            is_guessing = False
+            message = "Error on player turn."
+            console_manager.raise_wrong_hit_status(hit_status, hit_x, hit_y, message)
 
         print('\n' + message, end=' ')
         console_manager.press_enter()
 
     if not Board.board_ai.is_onside:
-        input(
-            "You are WINNER! You've destroyed all enemy units!"
-            "Press the Enter to end this game."
-        )
+        print("You won! You've destroyed all enemy ships!")
+        console_manager.press_enter()
         is_game = False
+
+
+if __name__ == "__main__":
+    while is_intro:
+        intro()
+
+    while is_game:
+        game()
+
+    Board.is_monitoring = True
+    Board.print_boards()
+
+    print()
+    console_manager.press_enter(action="exit game")
