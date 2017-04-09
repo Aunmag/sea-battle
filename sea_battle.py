@@ -125,6 +125,7 @@ class Board(object):
 
         cls.print_horizontal_marks()
         cls.print_horizontal_numbers()
+        print()
 
     @classmethod
     def print_headings(cls):
@@ -328,7 +329,7 @@ class Ship(object):
 
 class AI(object):
 
-    is_super_ai = False
+    is_super_ai = True
 
     def __init__(self):
         self.x_hit = None
@@ -336,7 +337,11 @@ class AI(object):
         self.last_message = ""
 
     def make_turn(self):
-        self.choose_hit_position_randomly()
+        if self.is_super_ai:
+            self.choose_hit_position_strictly()
+        else:
+            self.choose_hit_position_randomly()
+
         self.hit_position()
 
     def choose_hit_position_strictly(self):
@@ -422,48 +427,38 @@ def intro():
         Board.board_player = Board()  # Generate player board again
     elif input_value == 2:
         is_intro = False
-        print("\nOk! AI is going to start first. Get ready!")
-        console_manager.press_enter()
     elif input_value == 3:
         is_intro = False
         is_game = False
 
 
 def game():
-    ai.make_turn()
-    Board.print_boards()
-    print('\n' + ai.last_message)
-
     global is_game
 
-    if not Board.board_player.is_onside:
-        print("You were defeated. All your ships are destroyed.")
-        console_manager.press_enter()
-        is_game = False
-        return
+    is_player_turn = True
+    while is_player_turn:
+        Board.print_boards()
 
-    is_guessing = True
-    while is_guessing:
         hit_x = input("Choose X (column) to strike: ")
         hit_y = input("Choose Y (line) to strike: ")
 
         hit_x = console_manager.validate_input_coordinate(hit_x, Board.size)
         hit_y = console_manager.validate_input_coordinate(hit_y, Board.size)
 
-        if Console.WRONG_INPUT in (hit_x, hit_y):
+        if hit_x is Console.WRONG_INPUT or hit_y is Console.WRONG_INPUT:
             console_manager.press_enter()
             continue
 
         hit_status = Board.board_ai.check_is_any_ship_hit(hit_x, hit_y)
 
         if hit_status is HitStatus.MISS:
-            is_guessing = False
+            is_player_turn = False
             message = "You've missed."
         elif hit_status is HitStatus.DAMAGED:
-            is_guessing = False
+            is_player_turn = False
             message = "You've damaged enemy ship."
         elif hit_status is HitStatus.DESTROYED:
-            is_guessing = False
+            is_player_turn = False
             message = "You've destroyed enemy ship!"
         elif hit_status is HitStatus.MISS_REPEATED:
             message = "You've already hit this location, change your choose."
@@ -475,8 +470,15 @@ def game():
         console_manager.press_enter()
 
     if not Board.board_ai.is_onside:
-        print("You won! You've destroyed all enemy ships!")
-        console_manager.press_enter()
+        is_game = False
+        return
+
+    ai.make_turn()
+    Board.print_boards()
+    print(ai.last_message)
+    console_manager.press_enter()
+
+    if not Board.board_player.is_onside:
         is_game = False
 
 
@@ -487,8 +489,14 @@ if __name__ == "__main__":
     while is_game:
         game()
 
+    if not Board.board_ai.is_onside:
+        message = "You won! You've destroyed all enemy ships!"
+    elif not Board.board_player.is_onside:
+        message = "You were defeated. All your ships are destroyed."
+    else:
+        message = None
+
     Board.is_monitoring = True
     Board.print_boards()
 
-    print()
-    console_manager.press_enter(action="exit game")
+    console_manager.press_enter(message=message, action="exit game")
