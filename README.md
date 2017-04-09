@@ -7,12 +7,12 @@ For now AI can't distinguish and chase damaged ships. I'll improve it later.
 
 Notice that you can't arrange your ships manually. In the begging you can only shuffle their position randomly.
 
-- [Download](https://github.com/Aunmag/sea-battle/releases/)
-
-### Tips
+##### Tips
 - After game start you take turn first
 - You may press Ctrl+C to exit game at any time
 - Source code available [here](https://github.com/aunmag/sea-battle/)
+
+> [Download](https://github.com/Aunmag/sea-battle/releases/)
 
 ### Screenshots
 <img src="https://raw.githubusercontent.com/Aunmag/sea-battle/master/screenshots/Sea%20Battle%20v0.7.0%20screenshot%201.jpg" width="320">
