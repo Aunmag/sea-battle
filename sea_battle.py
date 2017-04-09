@@ -16,8 +16,7 @@ class Board(object):
     board_ai = None
     board_player = None
 
-    text_offset_start = 4
-    text_offset_center = 6
+    marks_offset = 2
 
     def __init__(self):
         self.validate_size()
@@ -95,13 +94,11 @@ class Board(object):
         console_manager.clear()
 
         cls.print_headings()
-        cls.print_horizontal_numbers()
-        cls.print_horizontal_marks()
+        cls.print_marks_horizontal()
 
         for row_index in range(cls.size):
             # Print left mark:
-            print(f"{row_index}", end=' ')
-            cls.print_mark('-')
+            cls.print_mark(row_index)
 
             # Print AI board:
             row = cls.board_ai.rows[row_index]
@@ -112,9 +109,7 @@ class Board(object):
                 console_manager.print_cell(cell)
 
             # Print mark between boards:
-            cls.print_mark('-')
-            print(f"{row_index}", end=' ')
-            cls.print_mark('-')
+            cls.print_mark(row_index)
 
             # Print player board:
             row = cls.board_player.rows[row_index]
@@ -123,17 +118,14 @@ class Board(object):
                 console_manager.print_cell(cell)
 
             # Print right mark:
-            cls.print_mark('-')
-            print(f"{row_index}")
-            # print(f"- {row_index}")
+            cls.print_mark(row_index)
 
-        cls.print_horizontal_marks()
-        cls.print_horizontal_numbers()
+        cls.print_marks_horizontal()
         print()
 
     @classmethod
     def print_headings(cls):
-        cls.print_offset_start()
+        cls.print_marks_offset()
 
         def get_ship_message(ships_quantity):
             if ships_quantity == 1:
@@ -146,49 +138,26 @@ class Board(object):
 
         heading_ai = f"AI ({ships_ai} {get_ship_message(ships_ai)})"
         heading_player = f"You ({ships_player} {get_ship_message(ships_player)})"
-        heading_player_offset = cls.size * 2 + cls.text_offset_center - len(heading_ai)
+        heading_player_offset = cls.size * 2 + cls.marks_offset - len(heading_ai)
         indentation = ' ' * heading_player_offset
 
         print(heading_ai, end=indentation)
-        print(heading_player, end='\n')
+        print(heading_player)
 
     @classmethod
-    def print_horizontal_marks(cls):
+    def print_marks_horizontal(cls):
         print(end=console_manager.Color.GRAY_1)
-
-        cls.print_offset_start()
-
+        cls.print_marks_offset()
         for n in range(cls.size):
-            print('|', end=' ')
-
-        cls.print_offset_center()
-
+            print(n, end=' ')
+        cls.print_marks_offset()
         for n in range(cls.size):
-            print('|', end=' ')
-
+            print(n, end=' ')
         print(console_manager.Color.DEFAULT)
 
     @classmethod
-    def print_horizontal_numbers(cls):
-        cls.print_offset_start()
-
-        for n in range(cls.size):
-            print(n, end=' ')
-
-        cls.print_offset_center()
-
-        for n in range(cls.size):
-            print(n, end=' ')
-
-        print()
-
-    @classmethod
-    def print_offset_start(cls):
-        print(end=(' ' * cls.text_offset_start))
-
-    @classmethod
-    def print_offset_center(cls):
-        print(end=(' ' * cls.text_offset_center))
+    def print_marks_offset(cls):
+        print(' ' * cls.marks_offset, end='')
 
     @classmethod
     def print_mark(cls, mark):
