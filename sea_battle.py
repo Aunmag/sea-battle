@@ -182,7 +182,7 @@ class Board(object):
 
     @classmethod
     def print_offset_center(cls):
-        print(end=(' ' * cls.text_offset_start))
+        print(end=(' ' * cls.text_offset_center))
 
 
 class Ship(object):
