@@ -1,8 +1,17 @@
 from enum import Enum
 
-TITLE = 'Sea Battle'
-VERSION = '0.7.0'
-AUTHOR = 'Aunmag'
+TITLE = "Sea Battle"
+VERSION = "0.7.0"
+AUTHOR = "Aunmag"
+DESCRIPTION = (
+    "This is my first game (text-based) since 2016.03.12. While I was been learning GUI "
+    "I decided to make this test project to work with code only."
+    "\n\n"
+    "For now AI can't distinguish and chase damaged ships. I'll improve it later."
+    "\n\n"
+    "Notice that you can't arrange your ships manually. In the begging you can only "
+    "shuffle their position randomly."
+)
 
 CELL_SHIP_UNIT = 'D'
 CELL_SHIP_DAMAGED = 'x'
