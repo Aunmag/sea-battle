@@ -14,4 +14,4 @@ Notice that you can't arrange your ships manually. In the begging you can only s
 > [Download](https://github.com/Aunmag/sea-battle/releases/)
 
 ### Screenshots
-<img src="https://github.com/Aunmag/sea-battle/blob/update/screenshots/Sea%20Battle%20v0.8.0%20screenshot%201.png" width="240"> <img src="https://github.com/Aunmag/sea-battle/blob/update/screenshots/Sea%20Battle%20v0.8.0%20screenshot%202.png" width="240">
+<img src="https://github.com/Aunmag/sea-battle/blob/master/screenshots/Sea%20Battle%20v0.8.0%20screenshot%201.png" width="240"> <img src="https://github.com/Aunmag/sea-battle/blob/master/screenshots/Sea%20Battle%20v0.8.0%20screenshot%202.png" width="240">
