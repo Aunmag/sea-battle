@@ -40,7 +40,7 @@ def request_input(heading, choices):
     if not heading:
         heading = "Choices"
 
-    message = f"\n### {heading.upper()}:"
+    message = f"### {heading}:"
 
     for number, choice in enumerate(choices):
         snipped = f"\n {number + 1}. {choice}"

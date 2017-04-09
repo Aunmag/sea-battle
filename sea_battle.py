@@ -429,39 +429,22 @@ Board.board_player = Board()
 def intro():
     Board.print_boards()
 
-    message = (
-        f"\nWelcome to the {TITLE} v{VERSION} by {AUTHOR}!"
-        "\n\n"
-        "### TIPS:"
-        "\n -- After game start you take turn first"
-        "\n -- You may press Ctrl+C to exit game at any time"
-        "\n -- Source code available here: github.com/aunmag/sea-battle"
-        "\n -- Just be smarter than AI"
-    )
-
-    print(message)
-
-    input_value = console_manager.request_input("Main Menu", (
+    message_intro = f"Welcome to the {TITLE} v{VERSION} by {AUTHOR}"
+    input_value = console_manager.request_input(message_intro, (
         "Shuffle ships",
         "Start game",
-        "Show description",
-        "Exit game",
+        "Show description and tips",
     ))
-
-    global is_intro
-    global is_game
 
     if input_value == 1:
         Board.board_player = Board()  # Generate player board again
     elif input_value == 2:
+        global is_intro
         is_intro = False
     elif input_value == 3:
         console_manager.clear()
-        print(DESCRIPTION + '\n')
+        print(f"### Description\n\n{DESCRIPTION}\n\n### Tips\n{TIPS}\n")
         console_manager.press_enter(action="back to the menu")
-    elif input_value == 4:
-        is_intro = False
-        is_game = False
 
 
 def game():
