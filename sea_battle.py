@@ -2,274 +2,515 @@
 # -*- coding: utf-8 -*-
 
 import random
-import os
 
-# Configs:
-size = 10
-monitoring = False
-
-# Style:
-s_buffer = "^"
-s_ship = "A"
-s_space = "."
-s_hit = "x"
-s_destroyed = "W"
-s_miss = "*"
-
-# Available ships (quantity, size):
-ships_list = [[1, 4], [2, 3], [3, 2], [4, 1]]
+from constants import *
+import console_manager
 
 
 class Board(object):
 
+    size = 10
+    is_monitoring = False  # for debug
+    ship_list = ((1, 4), (2, 3), (3, 2), (4, 1))  # available ships ((quantity, size), ..)
+
+    board_ai = None
+    board_player = None
+
+    text_offset_start = 4
+    text_offset_center = 6
+
     def __init__(self):
-        self.board = []
-        # Here will be containing spawned ships information:
-        self.spawned = []
+        self.validate_size()
 
-    def create(self):
-        for row in range(size):
-            self.board.append([s_space] * size)
+        self.rows = []  # actual field (rows of cells)
+        self.ships = []  # all spawned ships
 
-    def random(self):
+        self.is_onside = True
+        self.alive_ships_number = sum([ship[0] for ship in self.ship_list])
 
-        for ship in ships_list:
-            for unit in range(ship[0]):
+        self.create_rows()
+        self.generate_ships()
 
-                spawning = True
-                while spawning:
+    def create_rows(self):
+        for row in range(self.size):
+            self.rows.append([CELL_SPACE_EMPTY] * self.size)
 
-                    # Define the refer of ship (0 - x, 1 - y):
-                    global refer
-                    refer = random.randrange(2)
-                    if refer == 0:
-                        location_y = random.randrange(size)
-                        location_x = random.randrange(size - (ship[1] - 1))
-                    else:
-                        location_y = random.randrange(size - (ship[1] - 1))
-                        location_x = random.randrange(size)
+    def generate_ships(self):
+        for ship_type in self.ship_list:
+            ship_quantity = ship_type[0]
+            ship_size = ship_type[1]
+            for ship_number in range(ship_quantity):
+                Ship(self, ship_size)
 
-                    # Testing if ship has own space on the board:
-                    offset = 0
-                    for testing in range(ship[1]):
-                        if refer == 0 and self.board[location_y][location_x + offset] != s_space:
-                            continue
-                        elif refer == 1 and self.board[location_y + offset][location_x] != s_space:
-                            continue
-                        offset += 1
-                        if offset == ship[1]:
-                            spawning = False
+    def check_is_any_ship_hit(self, x, y):
+        hit_status = HitStatus.UNKNOWN
+        cell = self.rows[y][x]
 
-                # Creating ship body:
-                offset = 0
-                current_ship = []
-                for marker in range(ship[1]):
-                    if refer == 0:
-                        self.board[location_y][location_x + offset] = s_ship
-                        current_ship.append([location_y, location_x + offset])
-                    else:
-                        self.board[location_y + offset][location_x] = s_ship
-                        current_ship.append([location_y + offset, location_x])
-                    offset += 1
-                self.spawned.append(current_ship)
+        if cell is CELL_SPACE_EMPTY:
+            hit_status = HitStatus.MISS
+        elif cell in (CELL_SPACE_HIT, CELL_SHIP_DAMAGED, CELL_SHIP_DESTROYED):
+            hit_status = HitStatus.MISS_REPEATED
+        elif cell is CELL_SHIP_UNIT:
+            for ship in self.ships:
+                ship_hit_status = ship.check_is_hit(x, y)
+                if ship_hit_status is not HitStatus.MISS:
+                    hit_status = ship_hit_status
+                    break
 
-                # Creating buffer zone for unit:
-                for unit_point in current_ship:
-                    for buffer_point in ([0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]):
-                        b_point_y = unit_point[0] + buffer_point[0]
-                        b_point_x = unit_point[1] + buffer_point[1]
-                        if b_point_y in range(size) and b_point_x in range(size):
-                            if self.board[b_point_y][b_point_x] == s_space:
-                                self.board[b_point_y][b_point_x] = s_buffer
+        if hit_status is HitStatus.MISS:
+            self.rows[y][x] = CELL_SPACE_HIT
+        elif hit_status is HitStatus.DESTROYED:
+            self.update_status()
 
-    def updating(self, ship):
-        # Creating buffer zone for unit:
-        for unit in ship:
-            for buffer_point in ([0, 0], [0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]):
-                b_point_y = unit[0] + buffer_point[0]
-                b_point_x = unit[1] + buffer_point[1]
-                if b_point_y in range(size) and b_point_x in range(size):
-                    if self.board[b_point_y][b_point_x] == s_buffer:
-                        self.board[b_point_y][b_point_x] = s_miss
-                    elif self.board[b_point_y][b_point_x] == s_hit:
-                        self.board[b_point_y][b_point_x] = s_destroyed
+        return hit_status
 
+    def update_status(self):
+        alive_ships_number = 0
 
-def print_boards():
-    # Printing top of the scale:
-    print("\n    Your board" + (" " * (size + 5)) + "Enemy board")
-    print("    " + (" ".join(str(i) for i in list(range(size)))), end=(" " * 2))
-    print("    " + (" ".join(str(i) for i in list(range(size)))))
-    print("   " + (" |" * size), end=(" " * 2))
-    print("   " + (" |" * size))
-    # Printing left part of scale and board:
-    n = 0
-    for i in range(size):
-        if monitoring:
-            print(str(n) + " - " + " ".join(str(i) for i in player.board[n]), end=(" " * 2))
-            print(str(n) + " - " + " ".join(str(i) for i in ai.board[n]))
-        else:
-            print(str(n) + " - " + " ".join(str(i) for i in player.board[n]).replace(s_buffer, s_space), end=(" " * 2))
-            print(str(n) + " - " + " ".join(str(i) for i in ai.board[n]).replace(s_ship, s_space).replace(s_buffer, s_space))
-        n += 1
+        for ship in self.ships:
+            if not ship.is_destroyed:
+                alive_ships_number += 1
 
+        if alive_ships_number == 0:
+            self.is_onside = False
 
-def press_ent():
-    input("Press the Enter bottom to continue.\n")
+        self.alive_ships_number = alive_ships_number
 
+    @classmethod
+    def validate_size(cls):
+        size_limit_min = 10
+        size_limit_max = 10
 
-def state_of_ships(enemy):
-    global destroy
-    destroy = False
-    # Checking state of all ships:
-    for d_ship in enemy.spawned:
-        damage = 0
-        for d_unit in d_ship:
-            if enemy.board[d_unit[0]][d_unit[1]] == s_hit:
-                damage += 1
-        # If the current ship was destroyed:
-        if damage == len(d_ship):
-            enemy.updating(d_ship)
-            enemy.spawned.remove(d_ship)
-            destroy = True
+        if cls.size > size_limit_max:
+            message = "Field has too large size ({}). Maximal limit is {}."
+            message = message.format(cls.size, size_limit_max)
+            raise ValueError(message)
+        elif cls.size < size_limit_min:
+            message = "Field has too small size ({}). Minimal limit is {}."
+            message = message.format(cls.size, size_limit_min)
+            raise ValueError(message)
 
+    @classmethod
+    def print_boards(cls):
+        console_manager.clear()
 
-def ai_pass():
-    ai_guessing = True
-    while ai_guessing:
+        cls.print_headings()
+        cls.print_horizontal_numbers()
+        cls.print_horizontal_marks()
 
-        # Probability of AI intuition (zero is enable):
-        ai_intuition = random.randrange(size * 5)
+        for row_index in range(cls.size):
+            # Print left mark:
+            print(f"{row_index} - ", end='')
 
-        # AI intuition (dishonest searching for enemy valid ship):
-        if ai_intuition == 0:
-            ai_int_ship = random.randrange(len(player.spawned))  # Choosing for ship.
-            ai_int_unit = random.randrange(len(player.spawned[ai_int_ship]))  # Choosing for unit.
-            ai_guess_y = player.spawned[ai_int_ship][ai_int_unit][0]
-            ai_guess_x = player.spawned[ai_int_ship][ai_int_unit][1]
+            # Print AI board:
+            row = cls.board_ai.rows[row_index]
+            for cell_index in range(cls.size):
+                cell = row[cell_index]
+                if not cls.is_monitoring and cell is CELL_SHIP_UNIT:
+                    cell = CELL_SPACE_EMPTY
+                print(cell, end=' ')
 
-        # AI random guessing:
-        else:
-            ai_guess_y = random.randrange(size)
-            ai_guess_x = random.randrange(size)
+            # Print mark between boards:
+            mark = f"- {row_index} -"
+            print(mark, end=' ')
 
-        # Checking. If hit:
-        if player.board[ai_guess_y][ai_guess_x] == s_ship:
-            player.board[ai_guess_y][ai_guess_x] = s_hit
-            state_of_ships(player)
-            if destroy:
-                print("\nAI has destroyed your ship (X: %s, Y: %s)." % (ai_guess_x, ai_guess_y))
+            # Print player board:
+            row = cls.board_player.rows[row_index]
+            for cell_index in range(cls.size):
+                cell = row[cell_index]
+                print(cell, end=' ')
+
+            # Print right mark:
+            print(f"- {row_index}")
+
+        cls.print_horizontal_marks()
+        cls.print_horizontal_numbers()
+        print()
+
+    @classmethod
+    def print_headings(cls):
+        cls.print_offset_start()
+
+        def get_ship_message(ships_quantity):
+            if ships_quantity == 1:
+                return "ship"
             else:
-                print("\nAI has damaged your ship (X: %s, Y: %s)." % (ai_guess_x, ai_guess_y))
-            break
+                return "ships"
 
-        # Checking. If miss:
-        elif player.board[ai_guess_y][ai_guess_x] == s_space or player.board[ai_guess_y][ai_guess_x] == s_buffer:
-            player.board[ai_guess_y][ai_guess_x] = s_miss
-            print("\nAI has miss (X: %s, Y: %s)." % (ai_guess_x, ai_guess_y))
-            break
+        ships_ai = Board.board_ai.alive_ships_number
+        ships_player = Board.board_player.alive_ships_number
 
-        # Checking. Otherwise restart guessing:
+        heading_ai = f"AI ({ships_ai} {get_ship_message(ships_ai)})"
+        heading_player = f"You ({ships_player} {get_ship_message(ships_player)})"
+        heading_player_offset = cls.size * 2 + cls.text_offset_center - len(heading_ai)
+        indentation = ' ' * heading_player_offset
+
+        print(heading_ai, end=indentation)
+        print(heading_player, end='\n')
+
+    @classmethod
+    def print_horizontal_marks(cls):
+        cls.print_offset_start()
+
+        for n in range(cls.size):
+            print('|', end=' ')
+
+        cls.print_offset_center()
+
+        for n in range(cls.size):
+            print('|', end=' ')
+
+        print()
+
+    @classmethod
+    def print_horizontal_numbers(cls):
+        cls.print_offset_start()
+
+        for n in range(cls.size):
+            print(n, end=' ')
+
+        cls.print_offset_center()
+
+        for n in range(cls.size):
+            print(n, end=' ')
+
+        print()
+
+    @classmethod
+    def print_offset_start(cls):
+        print(end=(' ' * cls.text_offset_start))
+
+    @classmethod
+    def print_offset_center(cls):
+        print(end=(' ' * cls.text_offset_center))
+
+
+class Ship(object):
+
+    spawn_maximum_attempts_number = 256  # used to avoid infinite spawn loop
+
+    def __init__(self, board, size):
+        self.board = board
+        self.size = self.validate_size(size)
+        self.x = None
+        self.y = None
+        self.axis_direction = None
+        self.body_status = [True] * self.size
+        self.is_destroyed = False
+
+        self.generate_position()
+        board.ships.append(self)
+
+    @staticmethod
+    def validate_size(value):
+        if value < 1:
+            message = "Ship size should be grater than zero (got: {}).".format(value)
+            raise ValueError(message)
+        elif value > Board.size:
+            message = "Ship size should be smaller than board size which is {} (got: {})."
+            message = message.format(Board.size, value)
+            raise ValueError(message)
         else:
+            return value
+
+    def generate_position(self):
+        is_spawning = True
+        spawn_attempt = 0
+
+        while is_spawning:
+            if spawn_attempt == self.spawn_maximum_attempts_number:
+                message = "Number of spawn attempts exceeded. Limit is {}."
+                message = message.format(self.spawn_maximum_attempts_number)
+                raise OverflowError(message)
+            else:
+                spawn_attempt += 1
+
+            self.axis_direction = random.choice((AxisDirection.X, AxisDirection.Y))
+
+            if self.axis_direction is AxisDirection.X:
+                x_range = Board.size - self.size
+                y_range = Board.size
+            else:
+                x_range = Board.size
+                y_range = Board.size - self.size
+
+            self.x = random.randrange(x_range)
+            self.y = random.randrange(y_range)
+
+            if not self.check_is_collision():
+                is_spawning = False
+
+        self.draw_as_new()
+
+    def check_is_collision(self):
+        is_collision = False
+
+        for n in range(self.size):
+            if self.axis_direction is AxisDirection.X:
+                x = self.x + n
+                y = self.y
+            else:
+                x = self.x
+                y = self.y + n
+
+            for x_offset in OFFSETS:
+                for y_offset in OFFSETS:
+                    x_check = x + x_offset
+                    y_check = y + y_offset
+                    is_x_on_board = 0 <= x_check < Board.size
+                    is_y_on_board = 0 <= y_check < Board.size
+                    if is_x_on_board and is_y_on_board:
+                        cell = self.board.rows[y_check][x_check]
+                        if cell is CELL_SHIP_UNIT:
+                            is_collision = True
+                            return is_collision
+
+        return is_collision
+
+    def check_is_hit(self, hit_x, hit_y):
+        hit_status = HitStatus.MISS
+
+        if self.axis_direction is AxisDirection.X:
+            a1 = self.x
+            a2 = hit_x
+            b1 = self.y
+            b2 = hit_y
+        else:
+            a1 = self.y
+            a2 = hit_y
+            b1 = self.x
+            b2 = hit_x
+
+        if b1 == b2 and a1 <= a2 < a1 + self.size:
+            damaged_unit_id = a2 - a1
+            self.body_status[damaged_unit_id] = False
+            hit_status = HitStatus.DAMAGED
+            if not any(self.body_status):
+                self.is_destroyed = True
+                hit_status = HitStatus.DESTROYED
+                self.draw_as_destroyed()
+            else:
+                self.draw_damage(hit_x, hit_y)
+
+        return hit_status
+
+    def draw_as_new(self):
+        for n in range(self.size):
+            if self.axis_direction is AxisDirection.X:
+                x = self.x + n
+                y = self.y
+            else:
+                x = self.x
+                y = self.y + n
+            self.board.rows[y][x] = CELL_SHIP_UNIT
+
+    def draw_as_destroyed(self):
+        for n in range(self.size):
+            if self.axis_direction is AxisDirection.X:
+                x = self.x + n
+                y = self.y
+            else:
+                x = self.x
+                y = self.y + n
+            self.board.rows[y][x] = CELL_SHIP_DESTROYED
+
+            for y_offset in OFFSETS:
+                for x_offset in OFFSETS:
+                    x_neighbor = x + x_offset
+                    y_neighbor = y + y_offset
+                    if 0 <= x_neighbor < Board.size and 0 <= y_neighbor < Board.size:
+                        cell = self.board.rows[y_neighbor][x_neighbor]
+                        if cell is CELL_SPACE_EMPTY:
+                            self.board.rows[y_neighbor][x_neighbor] = CELL_SPACE_HIT
+
+    def draw_damage(self, x, y):
+        self.board.rows[y][x] = CELL_SHIP_DAMAGED
+
+
+class AI(object):
+
+    is_super_ai = False  # for debug
+
+    def __init__(self):
+        self.x_hit = None
+        self.y_hit = None
+        self.last_message = ""
+        self.is_turn = False
+
+    def make_turn(self):
+        self.is_turn = True
+
+        while self.is_turn:
+            if self.is_super_ai:
+                self.choose_hit_position_strictly()
+            else:
+                self.choose_hit_position_randomly()
+
+            self.hit_position()
+            self.print_data()
+
+            if not Board.board_player.is_onside:
+                self.is_turn = False
+
+    def choose_hit_position_strictly(self):
+        x_hit = None
+        y_hit = None
+
+        for ship in Board.board_player.ships:
+            if ship.is_destroyed:
+                continue
+
+            hit_ship_unit_index = None
+            for index, ship_unit in enumerate(ship.body_status):
+                if ship_unit:
+                    hit_ship_unit_index = index
+                    break
+
+            if hit_ship_unit_index is not None:
+                if ship.axis_direction is AxisDirection.X:
+                    x_hit = ship.x + hit_ship_unit_index
+                    y_hit = ship.y
+                else:
+                    x_hit = ship.x
+                    y_hit = ship.y + hit_ship_unit_index
+                break
+
+        if x_hit is None or y_hit is None:
+            raise RuntimeError("AI can't find position to hit strictly.")
+        else:
+            self.x_hit = x_hit
+            self.y_hit = y_hit
+
+    def choose_hit_position_randomly(self):
+        x_hit = None
+        y_hit = None
+
+        is_guessing = True
+        while is_guessing:
+            y_hit = random.randrange(Board.size)
+            x_hit = random.randrange(Board.size)
+            cell = Board.board_player.rows[y_hit][x_hit]
+            if cell is CELL_SHIP_UNIT or cell is CELL_SPACE_EMPTY:
+                is_guessing = False
+
+        self.x_hit = x_hit
+        self.y_hit = y_hit
+
+    def hit_position(self):
+        hit_status = Board.board_player.check_is_any_ship_hit(self.x_hit, self.y_hit)
+
+        if hit_status is HitStatus.DAMAGED:
+            message = "AI has damaged your ship (X: {}, Y: {})."
+        elif hit_status is HitStatus.DESTROYED:
+            message = "AI has destroyed your ship (X: {}, Y: {})."
+        else:
+            self.is_turn = False
+            message = "AI has miss (X: {}, Y: {})."
+
+        if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
+            message = f"{message} And got addition turn."
+
+        self.last_message = message.format(self.x_hit, self.y_hit)
+
+    def print_data(self):
+        Board.print_boards()
+        print(self.last_message)
+        console_manager.press_enter()
+
+
+is_intro = True
+is_game = True
+
+ai = AI()
+Board.board_ai = Board()
+Board.board_player = Board()
+
+
+def intro():
+    Board.print_boards()
+
+    message_intro = f"Welcome to the {TITLE} v{VERSION} by {AUTHOR}"
+    input_value = console_manager.request_input(message_intro, (
+        "Shuffle ships",
+        "Start game",
+        "Show description and tips",
+    ))
+
+    if input_value == 1:
+        Board.board_player = Board()  # Generate player board again
+    elif input_value == 2:
+        global is_intro
+        is_intro = False
+    elif input_value == 3:
+        console_manager.clear()
+        print(f"### Description\n\n{DESCRIPTION}\n\n### Tips\n{TIPS}\n")
+        console_manager.press_enter(action="back to the menu")
+
+
+def game():
+    global is_game
+
+    is_player_turn = True
+    while is_player_turn:
+        Board.print_boards()
+
+        hit_x = input("Choose X (column) to strike: ")
+        hit_y = input("Choose Y (line) to strike: ")
+
+        hit_x = console_manager.validate_input_coordinate(hit_x, Board.size)
+        hit_y = console_manager.validate_input_coordinate(hit_y, Board.size)
+
+        if hit_x is Console.WRONG_INPUT or hit_y is Console.WRONG_INPUT:
+            console_manager.press_enter()
             continue
 
+        hit_status = Board.board_ai.check_is_any_ship_hit(hit_x, hit_y)
 
-def clear():
-    # Clearing of previous board and text:
-    os.system('cls' if os.name == 'nt' else 'clear')
+        if hit_status is HitStatus.MISS:
+            is_player_turn = False
+            message = "You've missed."
+        elif hit_status is HitStatus.DAMAGED:
+            message = "You've damaged enemy ship."
+        elif hit_status is HitStatus.DESTROYED:
+            message = "You've destroyed enemy ship!"
+        elif hit_status is HitStatus.MISS_REPEATED:
+            message = "You've already hit this location, change your choose."
+        else:
+            message = "Error on player turn."
+            console_manager.raise_wrong_hit_status(hit_status, hit_x, hit_y, message)
 
-# Welcome:
-print("Welcome to \"Sea Battle\" BETA version by Aunmag!\n")
-press_ent()
+        if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
+            message = f"{message} And got addition turn."
 
-# Board AI creating:
-ai = Board()
-ai.create()
-ai.random()
+        print(message, end=' ')
+        console_manager.press_enter()
 
-# Board player creating:
-while True:
-    clear()
-    player = Board()
-    player.create()
-    player.random()
-    print("\nHIT: Here will be printing information about enemy.")
-    print_boards()
-    print("\nLook at your board (by left side).")
-    print("Press the Enter button to change spawn of your ships again (random).")
-    regenerate = input("Or if you're ready enter \"c\" letter here to continue: ")
-    if str(regenerate.lower()) != "c":
-        continue
+        if not Board.board_ai.is_onside:
+            is_player_turn = False
+            is_game = False
+            return
+
+    ai.make_turn()
+
+    if not Board.board_player.is_onside:
+        is_game = False
+
+
+if __name__ == "__main__":
+    while is_intro:
+        intro()
+
+    while is_game:
+        game()
+
+    if not Board.board_ai.is_onside:
+        message = "You won! You've destroyed all enemy ships!"
+    elif not Board.board_player.is_onside:
+        message = "You were defeated. All your ships are destroyed."
     else:
-        break
+        message = None
 
-# Board player creating:
-print("\nOk! AI is going to start first. Get ready!\n")
-press_ent()
+    Board.is_monitoring = True
+    Board.print_boards()
 
-
-game = True
-while game:
-
-    clear()
-    ai_pass()
-    print_boards()
-
-    guessing = True
-    while guessing:
-
-        # Printing information about lost enemy's ships:
-        print("\nEnemy ships remain: " + str(len(ai.spawned)) + ". ", end="")
-        print("Your ships remain: " + str(len(player.spawned)) + ".")
-
-        # Inputting the coordinates to hit:
-        guess_x = input("Choose X (column) position to strike: ")
-        guess_y = input("Choose Y (line) position to strike: ")
-
-        # Checking. If guessing can't be integer:
-        if not guess_x.isdigit() or not guess_y.isdigit():
-            print("\nError! You've entered wrong coordinates! Change your choose.")
-            continue
-
-        # Converting guessing to integer form string:
-        guess_x = int(guess_x)
-        guess_y = int(guess_y)
-
-        # Checking. If guessing isn't in the board:
-        if not (guess_x in range(size)) or not (guess_y in range(size)):
-            print("\nError! This location is too far to hit it! Change your choose.")
-            continue
-
-        # Checking. If hit:
-        elif ai.board[guess_y][guess_x] == s_ship:
-            ai.board[guess_y][guess_x] = s_hit
-            state_of_ships(ai)
-            if destroy:
-                print("\nYou've destroyed enemy ship!", end=" ")
-            else:
-                print("\nYou've damaged enemy ship!", end=" ")
-            press_ent()
-            break
-
-        # Checking. If miss:
-        elif ai.board[guess_y][guess_x] == s_space or ai.board[guess_y][guess_x] == s_buffer:
-            ai.board[guess_y][guess_x] = s_miss
-            print("\nYou've missed.", end=" ")
-            press_ent()
-
-        # Checking. If hit the same palace again:
-        else:
-            print("\nYou've already hit to this location, change your choose.")
-            continue
-
-        # Checking. End:
-        break
-
-    if len(ai.spawned) == 0:
-        input("You are WINNER! You've destroyed all enemy units! Press the Enter to end this game.")
-        break
-
-    if len(player.spawned) == 0:
-        print("You are LOSER! All your units were destroyed.")
-        input("Total enemy ships remain: " + str(len(ai.spawned)) + ".")
-        break
+    console_manager.press_enter(message=message, action="exit game")

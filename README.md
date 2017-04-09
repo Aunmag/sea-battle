@@ -1,15 +1,17 @@
-# Sea Battle <img src="https://img.shields.io/badge/version-0.7.0-green.svg?style=flat"> <img src="https://img.shields.io/badge/last_update-2016.03.12-green.svg?style=flat"> <img src="https://img.shields.io/badge/first_release-2016.03.12-lightgrey.svg?style=flat">
+# Sea Battle <img src="https://img.shields.io/badge/release-v0.8.0-green.svg?style=flat"> <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat"> <img src="https://img.shields.io/badge/python-v3.6-blue.svg?style=flat">
 
 ### About
+This is my first game (text-based) since 2016.03.12. While I was been learning GUI I decided to make this test project to work with code only.
 
-This is my first game. While I was been learning GUI I decided to make this test project. Just worked only with code.
+For now AI can't distinguish and chase damaged ships. I'll improve it later.
 
-For now AI can't distinguish and chase damaged ships. To compensate this AI has (intuition) 0.02 chance to see your one unit ship.
+Notice that you can't arrange your ships manually. In the begging you can only shuffle their position randomly.
 
-You can't put your new ships manually. In the begging you only can regenerate random positions of ships.
+- After game start you take turn first
+- You may press Ctrl+C to exit game at any time
+- Source code available [here](https://github.com/aunmag/sea-battle/)
 
-- [Download](https://github.com/Aunmag/sea-battle/releases/)
+> [Download](https://github.com/Aunmag/sea-battle/releases/)
 
 ### Screenshots
-
-<img src="https://raw.githubusercontent.com/Aunmag/sea-battle/first-version/screenshots/Sea%20Battle%20v0.7.0%20screenshot%201.jpg" width="320">
+<img src="https://github.com/Aunmag/sea-battle/blob/master/screenshots/Sea%20Battle%20v0.8.0%20screenshot%201.png" width="240"> <img src="https://github.com/Aunmag/sea-battle/blob/master/screenshots/Sea%20Battle%20v0.8.0%20screenshot%202.png" width="240">
