@@ -1,7 +1,7 @@
 from enum import Enum
 
 TITLE = 'Sea Battle'
-VERSION = '0.7.0'
+VERSION = '0.8.0'
 AUTHOR = 'Aunmag'
 
 CELL_SHIP_UNIT = 'D'
