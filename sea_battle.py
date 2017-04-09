@@ -329,7 +329,7 @@ class Ship(object):
 
 class AI(object):
 
-    is_super_ai = True
+    is_super_ai = False
 
     def __init__(self):
         self.x_hit = None
