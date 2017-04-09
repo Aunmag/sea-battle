@@ -98,7 +98,7 @@ class Board(object):
 
         for row_index in range(cls.size):
             # Print left mark:
-            print(row_index, end=' ')
+            cls.print_mark(row_index)
 
             # Print AI board:
             row = cls.board_ai.rows[row_index]
@@ -106,19 +106,19 @@ class Board(object):
                 cell = row[cell_index]
                 if not cls.is_monitoring and cell is CELL_SHIP_UNIT:
                     cell = CELL_SPACE_EMPTY
-                print(cell, end=' ')
+                console_manager.print_cell(cell)
 
             # Print mark between boards:
-            print(row_index, end=' ')
+            cls.print_mark(row_index)
 
             # Print player board:
             row = cls.board_player.rows[row_index]
             for cell_index in range(cls.size):
                 cell = row[cell_index]
-                print(cell, end=' ')
+                console_manager.print_cell(cell)
 
             # Print right mark:
-            print(row_index)
+            cls.print_mark(row_index)
 
         cls.print_marks_horizontal()
         print()
@@ -146,17 +146,24 @@ class Board(object):
 
     @classmethod
     def print_marks_horizontal(cls):
+        print(end=console_manager.Color.GRAY_1)
         cls.print_marks_offset()
         for n in range(cls.size):
             print(n, end=' ')
         cls.print_marks_offset()
         for n in range(cls.size):
             print(n, end=' ')
-        print()
+        print(console_manager.Color.DEFAULT)
 
     @classmethod
     def print_marks_offset(cls):
         print(' ' * cls.marks_offset, end='')
+
+    @classmethod
+    def print_mark(cls, mark):
+        print(end=console_manager.Color.GRAY_2)
+        print(mark, end=' ')
+        print(end=console_manager.Color.DEFAULT)
 
 
 class Ship(object):
@@ -471,6 +478,8 @@ def game():
 
 
 if __name__ == "__main__":
+    console_manager.Color.activate()
+
     while is_intro:
         intro()
 
