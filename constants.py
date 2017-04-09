@@ -1,7 +1,7 @@
 from enum import Enum
 
 TITLE = "Sea Battle"
-VERSION = "0.7.0"
+VERSION = "0.8.0"
 AUTHOR = "Aunmag"
 DESCRIPTION = (
     "This is my first game (text-based) since 2016.03.12. While I was been learning GUI "
