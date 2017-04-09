@@ -444,6 +444,7 @@ def intro():
     input_value = console_manager.request_input("Main Menu", (
         "Shuffle ships",
         "Start game",
+        "Show description",
         "Exit game",
     ))
 
@@ -455,6 +456,10 @@ def intro():
     elif input_value == 2:
         is_intro = False
     elif input_value == 3:
+        console_manager.clear()
+        print(DESCRIPTION + '\n')
+        console_manager.press_enter(action="back to the menu")
+    elif input_value == 4:
         is_intro = False
         is_game = False
 

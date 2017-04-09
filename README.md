@@ -2,11 +2,11 @@
 
 ### About
 
-This is my first game since 2016.03.12. While I was been learning GUI I decided to make this test project. Just worked only with code.
+This is my first game (text-based) since 2016.03.12. While I was been learning GUI I decided to make this test project to work with code only.
 
-For now AI can't distinguish and chase damaged ships. To compensate this AI has (intuition) 0.02 chance to see your one unit ship.
+For now AI can't distinguish and chase damaged ships. I'll improve it later.
 
-You can't put your new ships manually. In the begging you only can regenerate random positions of ships.
+Notice that you can't arrange your ships manually. In the begging you can only shuffle their position randomly.
 
 - [Download](https://github.com/Aunmag/sea-battle/releases/)
 
