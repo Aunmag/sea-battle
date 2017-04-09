@@ -12,6 +12,13 @@ DESCRIPTION = (
     "Notice that you can't arrange your ships manually. In the begging you can only "
     "shuffle their position randomly."
 )
+TIPS = (
+    " - After game start you take turn first"
+    '\n'
+    " - You may press Ctrl+C to exit game at any time"
+    '\n'
+    " - Source code available here: github.com/aunmag/sea-battle"
+)
 
 CELL_SHIP_UNIT = 'D'
 CELL_SHIP_DAMAGED = 'x'
