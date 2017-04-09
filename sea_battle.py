@@ -429,7 +429,17 @@ Board.board_player = Board()
 def intro():
     Board.print_boards()
 
-    print(f"\nWelcome to the {TITLE} v{VERSION} by {AUTHOR}!")
+    message = (
+        f"\nWelcome to the {TITLE} v{VERSION} by {AUTHOR}!"
+        "\n\n"
+        "### TIPS:"
+        "\n -- After game start you take turn first"
+        "\n -- You may press Ctrl+C to exit game at any time"
+        "\n -- Source code available here: github.com/aunmag/sea-battle"
+        "\n -- Just be smarter than AI"
+    )
+
+    print(message)
 
     input_value = console_manager.request_input("Main Menu", (
         "Shuffle ships",
