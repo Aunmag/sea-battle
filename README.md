@@ -1,4 +1,4 @@
-# Sea Battle <img src="https://img.shields.io/badge/release-v0.7.0-green.svg?style=flat"> <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat"> <img src="https://img.shields.io/badge/python-v3.6-blue.svg?style=flat">
+# Sea Battle <img src="https://img.shields.io/badge/release-v0.8.0-green.svg?style=flat"> <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat"> <img src="https://img.shields.io/badge/python-v3.6-blue.svg?style=flat">
 
 ### About
 
