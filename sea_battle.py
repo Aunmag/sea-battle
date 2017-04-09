@@ -100,7 +100,8 @@ class Board(object):
 
         for row_index in range(cls.size):
             # Print left mark:
-            print(f"{row_index} - ", end='')
+            print(f"{row_index}", end=' ')
+            cls.print_mark('-')
 
             # Print AI board:
             row = cls.board_ai.rows[row_index]
@@ -108,20 +109,23 @@ class Board(object):
                 cell = row[cell_index]
                 if not cls.is_monitoring and cell is CELL_SHIP_UNIT:
                     cell = CELL_SPACE_EMPTY
-                print(cell, end=' ')
+                console_manager.print_cell(cell)
 
             # Print mark between boards:
-            mark = f"- {row_index} -"
-            print(mark, end=' ')
+            cls.print_mark('-')
+            print(f"{row_index}", end=' ')
+            cls.print_mark('-')
 
             # Print player board:
             row = cls.board_player.rows[row_index]
             for cell_index in range(cls.size):
                 cell = row[cell_index]
-                print(cell, end=' ')
+                console_manager.print_cell(cell)
 
             # Print right mark:
-            print(f"- {row_index}")
+            cls.print_mark('-')
+            print(f"{row_index}")
+            # print(f"- {row_index}")
 
         cls.print_horizontal_marks()
         cls.print_horizontal_numbers()
@@ -150,6 +154,8 @@ class Board(object):
 
     @classmethod
     def print_horizontal_marks(cls):
+        print(end=console_manager.Color.GRAY_1)
+
         cls.print_offset_start()
 
         for n in range(cls.size):
@@ -160,7 +166,7 @@ class Board(object):
         for n in range(cls.size):
             print('|', end=' ')
 
-        print()
+        print(console_manager.Color.DEFAULT)
 
     @classmethod
     def print_horizontal_numbers(cls):
@@ -183,6 +189,12 @@ class Board(object):
     @classmethod
     def print_offset_center(cls):
         print(end=(' ' * cls.text_offset_center))
+
+    @classmethod
+    def print_mark(cls, mark):
+        print(end=console_manager.Color.GRAY_2)
+        print(mark, end=' ')
+        print(end=console_manager.Color.DEFAULT)
 
 
 class Ship(object):
@@ -497,6 +509,8 @@ def game():
 
 
 if __name__ == "__main__":
+    console_manager.Color.activate()
+
     while is_intro:
         intro()
 
