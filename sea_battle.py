@@ -10,7 +10,7 @@ import console_manager
 class Board(object):
 
     size = 10
-    is_monitoring = False
+    is_monitoring = False  # for debug
     ship_list = ((1, 4), (2, 3), (3, 2), (4, 1))  # available ships ((quantity, size), ..)
 
     board_ai = None
@@ -329,20 +329,28 @@ class Ship(object):
 
 class AI(object):
 
-    is_super_ai = True
+    is_super_ai = False  # for debug
 
     def __init__(self):
         self.x_hit = None
         self.y_hit = None
         self.last_message = ""
+        self.is_turn = False
 
     def make_turn(self):
-        if self.is_super_ai:
-            self.choose_hit_position_strictly()
-        else:
-            self.choose_hit_position_randomly()
+        self.is_turn = True
 
-        self.hit_position()
+        while self.is_turn:
+            if self.is_super_ai:
+                self.choose_hit_position_strictly()
+            else:
+                self.choose_hit_position_randomly()
+
+            self.hit_position()
+            self.print_data()
+
+            if not Board.board_player.is_onside:
+                self.is_turn = False
 
     def choose_hit_position_strictly(self):
         x_hit = None
@@ -396,9 +404,18 @@ class AI(object):
         elif hit_status is HitStatus.DESTROYED:
             message = "AI has destroyed your ship (X: {}, Y: {})."
         else:
+            self.is_turn = False
             message = "AI has miss (X: {}, Y: {})."
 
+        if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
+            message = f"{message} And got addition turn."
+
         self.last_message = message.format(self.x_hit, self.y_hit)
+
+    def print_data(self):
+        Board.print_boards()
+        print(self.last_message)
+        console_manager.press_enter()
 
 
 is_intro = True
@@ -455,10 +472,8 @@ def game():
             is_player_turn = False
             message = "You've missed."
         elif hit_status is HitStatus.DAMAGED:
-            is_player_turn = False
             message = "You've damaged enemy ship."
         elif hit_status is HitStatus.DESTROYED:
-            is_player_turn = False
             message = "You've destroyed enemy ship!"
         elif hit_status is HitStatus.MISS_REPEATED:
             message = "You've already hit this location, change your choose."
@@ -466,17 +481,18 @@ def game():
             message = "Error on player turn."
             console_manager.raise_wrong_hit_status(hit_status, hit_x, hit_y, message)
 
-        print('\n' + message, end=' ')
+        if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
+            message = f"{message} And got addition turn."
+
+        print(message, end=' ')
         console_manager.press_enter()
 
-    if not Board.board_ai.is_onside:
-        is_game = False
-        return
+        if not Board.board_ai.is_onside:
+            is_player_turn = False
+            is_game = False
+            return
 
     ai.make_turn()
-    Board.print_boards()
-    print(ai.last_message)
-    console_manager.press_enter()
 
     if not Board.board_player.is_onside:
         is_game = False
