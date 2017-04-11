@@ -31,8 +31,9 @@ OFFSETS = (-1, 0, 1)
 
 
 class AxisDirection(Enum):
-    X = 0
-    Y = 1
+    UNKNOWN = 0
+    X = 1
+    Y = 2
 
 
 class HitStatus(Enum):

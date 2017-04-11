@@ -21,9 +21,12 @@ def clear():
     os.system(console_command)
 
 
+def raise_wrong_axis_direction(axis_direction):
+    raise ValueError(f"Got wrong axis direction {axis_direction}.")
+
+
 def raise_wrong_hit_status(hit_status, x=None, y=None, details=None):
-    message = "Got wrong hit status ({})."
-    message = message.format(hit_status)
+    message = f"Got wrong hit status {hit_status}."
 
     if x is not None and y is not None:
         coordinates = "\nCoordinates: x{} y{}.".format(x, y)

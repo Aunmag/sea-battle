@@ -158,6 +158,14 @@ class Board(object):
     def print_marks_offset(cls):
         print(' ' * cls.marks_offset, end='')
 
+    @classmethod
+    def check_is_position_on_board(cls, x, y):
+
+        def check_is_number_in_size(n):
+            return 0 <= n < cls.size
+
+        return check_is_number_in_size(x) and check_is_number_in_size(y)
+
 
 class Ship(object):
 
@@ -201,12 +209,12 @@ class Ship(object):
 
             self.axis_direction = random.choice((AxisDirection.X, AxisDirection.Y))
 
-            if self.axis_direction is AxisDirection.X:
-                x_range = Board.size - self.size
-                y_range = Board.size
-            else:
-                x_range = Board.size
-                y_range = Board.size - self.size
+            x_range, y_range = add_axis_offset(
+                self.axis_direction,
+                Board.size,
+                Board.size,
+                -self.size,
+            )
 
             self.x = random.randrange(x_range)
             self.y = random.randrange(y_range)
@@ -220,12 +228,7 @@ class Ship(object):
         is_collision = False
 
         for n in range(self.size):
-            if self.axis_direction is AxisDirection.X:
-                x = self.x + n
-                y = self.y
-            else:
-                x = self.x
-                y = self.y + n
+            x, y = add_axis_offset(self.axis_direction, self.x, self.y, n)
 
             for x_offset in OFFSETS:
                 for y_offset in OFFSETS:
@@ -249,11 +252,14 @@ class Ship(object):
             a2 = hit_x
             b1 = self.y
             b2 = hit_y
-        else:
+        elif self.axis_direction is AxisDirection.Y:
             a1 = self.y
             a2 = hit_y
             b1 = self.x
             b2 = hit_x
+        else:
+            console_manager.raise_wrong_axis_direction(self.axis_direction)
+            return HitStatus.UNKNOWN
 
         if b1 == b2 and a1 <= a2 < a1 + self.size:
             damaged_unit_id = a2 - a1
@@ -270,22 +276,12 @@ class Ship(object):
 
     def draw_as_new(self):
         for n in range(self.size):
-            if self.axis_direction is AxisDirection.X:
-                x = self.x + n
-                y = self.y
-            else:
-                x = self.x
-                y = self.y + n
+            x, y = add_axis_offset(self.axis_direction, self.x, self.y, n)
             self.board.rows[y][x] = CELL_SHIP_UNIT
 
     def draw_as_destroyed(self):
         for n in range(self.size):
-            if self.axis_direction is AxisDirection.X:
-                x = self.x + n
-                y = self.y
-            else:
-                x = self.x
-                y = self.y + n
+            x, y = add_axis_offset(self.axis_direction, self.x, self.y, n)
             self.board.rows[y][x] = CELL_SHIP_DESTROYED
 
             for y_offset in OFFSETS:
@@ -306,10 +302,19 @@ class AI(object):
     is_super_ai = False  # for debug
 
     def __init__(self):
-        self.x_hit = None
-        self.y_hit = None
+        self.hit_x = None
+        self.hit_y = None
         self.last_message = ""
         self.is_turn = False
+
+        # Memory:
+        self.is_chasing = False
+        self.target_x = None
+        self.target_y = None
+        self.hit_offset_successful = 0
+
+        self.target_axis_direction = AxisDirection.UNKNOWN
+        self.is_target_axis_direction_success = False
 
     def make_turn(self):
         self.is_turn = True
@@ -317,6 +322,8 @@ class AI(object):
         while self.is_turn:
             if self.is_super_ai:
                 self.choose_hit_position_strictly()
+            elif self.is_chasing:
+                self.choose_hit_position_logicly()
             else:
                 self.choose_hit_position_randomly()
 
@@ -341,19 +348,34 @@ class AI(object):
                     break
 
             if hit_ship_unit_index is not None:
-                if ship.axis_direction is AxisDirection.X:
-                    x_hit = ship.x + hit_ship_unit_index
-                    y_hit = ship.y
-                else:
-                    x_hit = ship.x
-                    y_hit = ship.y + hit_ship_unit_index
+                x_hit, y_hit = add_axis_offset(
+                    ship.axis_direction,
+                    ship.x,
+                    ship.y,
+                    hit_ship_unit_index,
+                )
                 break
 
         if x_hit is None or y_hit is None:
             raise RuntimeError("AI can't find position to hit strictly.")
         else:
-            self.x_hit = x_hit
-            self.y_hit = y_hit
+            self.hit_x = x_hit
+            self.hit_y = y_hit
+
+    def choose_hit_position_logically(self):
+        if self.target_axis_direction is AxisDirection.UNKNOWN:
+            axis_direction = random.choice((AxisDirection.X, AxisDirection.Y))
+        else:
+            axis_direction = self.target_axis_direction
+
+        test_offset = random.choice((-1, 1))
+
+        if axis_direction is AxisDirection.X:
+            pass
+        elif axis_direction is AxisDirection.Y:
+            pass
+        else:
+            console_manager.raise_wrong_axis_direction(axis_direction)
 
     def choose_hit_position_randomly(self):
         x_hit = None
@@ -367,15 +389,19 @@ class AI(object):
             if cell is CELL_SHIP_UNIT or cell is CELL_SPACE_EMPTY:
                 is_guessing = False
 
-        self.x_hit = x_hit
-        self.y_hit = y_hit
+        self.hit_x = x_hit
+        self.hit_y = y_hit
 
     def hit_position(self):
-        hit_status = Board.board_player.check_is_any_ship_hit(self.x_hit, self.y_hit)
+        hit_status = Board.board_player.check_is_any_ship_hit(self.hit_x, self.hit_y)
 
         if hit_status is HitStatus.DAMAGED:
+            self.is_chasing = True
+            self.target_x = self.hit_x
+            self.target_y = self.hit_y
             message = "AI has damaged your ship (X: {}, Y: {})."
         elif hit_status is HitStatus.DESTROYED:
+            self.reset_memory()
             message = "AI has destroyed your ship (X: {}, Y: {})."
         else:
             self.is_turn = False
@@ -384,12 +410,30 @@ class AI(object):
         if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
             message = f"{message} And got addition turn."
 
-        self.last_message = message.format(self.x_hit, self.y_hit)
+        self.last_message = message.format(self.hit_x, self.hit_y)
+
+    def reset_memory(self):
+        self.is_chasing = False
+        self.target_x = None
+        self.target_y = None
+        self.hit_offset_successful = 0
+        self.target_axis_direction = AxisDirection.UNKNOWN
 
     def print_data(self):
         Board.print_boards()
         print(self.last_message)
         console_manager.press_enter()
+
+
+def add_axis_offset(axis_direction, x, y, number):
+    if axis_direction is AxisDirection.X:
+        x += number
+    elif axis_direction is AxisDirection.Y:
+        y += number
+    else:
+        console_manager.raise_wrong_axis_direction(axis_direction)
+
+    return x, y
 
 
 is_intro = True
@@ -424,7 +468,7 @@ def intro():
 def game():
     global is_game
 
-    is_player_turn = True
+    is_player_turn = False
     while is_player_turn:
         Board.print_boards()
 
