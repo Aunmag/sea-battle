@@ -4,6 +4,7 @@
 import random
 
 from constants import *
+from localization_manager import get_message
 import console_manager
 
 
@@ -403,11 +404,13 @@ Board.board_player = Board()
 def intro():
     Board.print_boards()
 
-    message_intro = f"Welcome to the {TITLE} v{VERSION} by {AUTHOR}"
+    # message_intro = f"Welcome to the {TITLE} v{VERSION} by {AUTHOR}"
+    message_intro = get_message("welcome")
+    message_intro = message_intro.format(TITLE, VERSION, AUTHOR)
     input_value = console_manager.request_input(message_intro, (
-        "Shuffle ships",
-        "Start game",
-        "Show description and tips",
+        get_message("shuffle"),
+        get_message("start"),
+        get_message("show_tips"),
     ))
 
     if input_value == 1:

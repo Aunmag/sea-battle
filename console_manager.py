@@ -1,6 +1,7 @@
 import os
 
 from constants import *
+from localization_manager import get_message
 
 
 def press_enter(message=None, action="continue"):
@@ -46,7 +47,7 @@ def request_input(heading, choices):
         snipped = f"\n {number + 1}. {choice}"
         message += snipped
 
-    message += "\n\nChose an action and press Enter: "
+    message += "\n\n" + get_message("chose_action") + ": "
 
     input_value = input(message)
     input_value = validate_input(input_value, len(choices))
@@ -91,3 +92,8 @@ def validate_input_coordinate(value, board_size):
     else:
         print("Error! This location is too far to hit! Change your choose.")
         return Console.WRONG_INPUT
+
+
+def print_message(message_enum, end='\n'):
+    message_translated = localization_manager.get_message(message_enum)
+    print(message_translated, end=end)
