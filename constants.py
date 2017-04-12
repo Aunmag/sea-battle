@@ -29,6 +29,8 @@ CELL_SPACE_BUFFER = '^'
 
 OFFSETS = (-1, 0, 1)
 
+ITERATION_LIMIT = 256  # Used to avoid infinite loops
+
 
 class AxisDirection(Enum):
     UNKNOWN = 0

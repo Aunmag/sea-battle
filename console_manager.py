@@ -94,3 +94,10 @@ def validate_input_coordinate(value, board_size):
     else:
         print("Error! This location is too far to hit! Change your choose.")
         return Console.WRONG_INPUT
+
+
+def validate_iteration_number(value):
+    if value == ITERATION_LIMIT:
+        raise OverflowError(f"Iteration number exceeded. Limit is {ITERATION_LIMIT}.")
+
+    return value + 1
