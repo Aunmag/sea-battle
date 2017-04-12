@@ -29,10 +29,13 @@ CELL_SPACE_BUFFER = '^'
 
 OFFSETS = (-1, 0, 1)
 
+ITERATION_LIMIT = 256  # Used to avoid infinite loops
+
 
 class AxisDirection(Enum):
-    X = 0
-    Y = 1
+    UNKNOWN = 0
+    X = 1
+    Y = 2
 
 
 class HitStatus(Enum):
