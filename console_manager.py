@@ -3,6 +3,29 @@ import os
 from constants import *
 
 
+class Color(object):
+
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    GRAY = "\033[2m"
+    READ = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    DEFAULT = "\033[0m"
+
+    @classmethod
+    def deactivate(cls):
+        cls.BOLD = ''
+        cls.UNDERLINE = ''
+        cls.GRAY = ''
+        cls.READ = ''
+        cls.GREEN = ''
+        cls.YELLOW = ''
+        cls.BLUE = ''
+        cls.DEFAULT = ''
+
+
 def press_enter(message=None, action="continue"):
     message_press_enter = f"Press Enter to {action}... "
 
