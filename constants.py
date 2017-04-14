@@ -23,16 +23,18 @@ TIPS = (
 CELL_SHIP_UNIT = 'D'
 CELL_SHIP_DAMAGED = 'x'
 CELL_SHIP_DESTROYED = '#'
-CELL_SPACE_EMPTY = '.'
-CELL_SPACE_HIT = '*'
-CELL_SPACE_BUFFER = '^'
+CELL_SPACE_EMPTY = '.'  # 183, 1632, 1776
+CELL_SPACE_HIT = '*'  # 42295, 10625, 8226
 
 OFFSETS = (-1, 0, 1)
 
+ITERATION_LIMIT = 256  # Used to avoid infinite loops
+
 
 class AxisDirection(Enum):
-    X = 0
-    Y = 1
+    UNKNOWN = 0
+    X = 1
+    Y = 2
 
 
 class HitStatus(Enum):

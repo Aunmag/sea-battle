@@ -4,6 +4,29 @@ from constants import *
 from localization_manager import get_message
 
 
+class Color(object):
+
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    GRAY = "\033[2m"
+    READ = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    DEFAULT = "\033[0m"
+
+    @classmethod
+    def deactivate(cls):
+        cls.BOLD = ''
+        cls.UNDERLINE = ''
+        cls.GRAY = ''
+        cls.READ = ''
+        cls.GREEN = ''
+        cls.YELLOW = ''
+        cls.BLUE = ''
+        cls.DEFAULT = ''
+
+
 def press_enter(message=None, action="continue"):
     message_press_enter = f"Press Enter to {action}... "
 
@@ -22,9 +45,12 @@ def clear():
     os.system(console_command)
 
 
+def raise_wrong_axis_direction(axis_direction):
+    raise ValueError(f"Got wrong axis direction {axis_direction}.")
+
+
 def raise_wrong_hit_status(hit_status, x=None, y=None, details=None):
-    message = "Got wrong hit status ({})."
-    message = message.format(hit_status)
+    message = f"Got wrong hit status {hit_status}."
 
     if x is not None and y is not None:
         coordinates = "\nCoordinates: x{} y{}.".format(x, y)
@@ -92,6 +118,13 @@ def validate_input_coordinate(value, board_size):
     else:
         print("Error! This location is too far to hit! Change your choose.")
         return Console.WRONG_INPUT
+
+      
+def validate_iteration_number(value):
+  if value == ITERATION_LIMIT:
+      raise OverflowError(f"Iteration number exceeded. Limit is {ITERATION_LIMIT}.")
+
+  return value + 1
 
 
 def print_message(message_enum, end='\n'):
