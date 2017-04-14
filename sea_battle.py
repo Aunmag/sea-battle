@@ -316,8 +316,9 @@ class AI(object):
         self.memory_reset()
 
     def make_turn(self):
-        self.is_turn = True
+        self.last_message = ""
 
+        self.is_turn = True
         while self.is_turn:
             if self.is_super_ai:
                 self.choose_hit_position_strictly()
@@ -419,18 +420,22 @@ class AI(object):
                 self.is_chasing = True
                 self.chasing_x = self.hit_x
                 self.chasing_y = self.hit_y
-            message = "AI has damaged your ship (X: {}, Y: {})."
+            message = "AI has damaged your ship {}."
         elif hit_status is HitStatus.DESTROYED:
             self.memory_reset()
-            message = "AI has destroyed your ship (X: {}, Y: {})."
+            message = "AI has destroyed your ship {}."
         else:
             self.is_turn = False
-            message = "AI has miss (X: {}, Y: {})."
+            message = "AI has miss {}."
 
         if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
             message = f"{message} And got addition turn."
 
-        self.last_message = message.format(self.hit_x, self.hit_y)
+        message_coordinates = f"at {self.hit_x}-{self.hit_y}"
+        message = message.format(message_coordinates)
+        message += '\n'
+
+        self.last_message += message
 
     def memory_reset(self):
         self.is_chasing = False
@@ -449,7 +454,6 @@ class AI(object):
     def print_data(self):
         Board.print_boards()
         print(self.last_message)
-        console_manager.press_enter()
 
 
 def add_axis_offset(axis_direction, x, y, number):
@@ -498,12 +502,16 @@ def game():
     is_player_turn = True
     while is_player_turn:
         Board.print_boards()
+        print(ai.last_message)
 
-        hit_x = input("Choose X (column) to strike: ")
-        hit_y = input("Choose Y (line) to strike: ")
+        hit_input = input("Choose position to strike (type X-Y): ")
 
-        hit_x = console_manager.validate_input_coordinate(hit_x, Board.size)
-        hit_y = console_manager.validate_input_coordinate(hit_y, Board.size)
+        if len(hit_input) < 2:
+            console_manager.press_enter(message="You have to enter X and Y (like 0-5).")
+            continue
+
+        hit_x = console_manager.validate_input_coordinate(hit_input[0], Board.size)
+        hit_y = console_manager.validate_input_coordinate(hit_input[-1], Board.size)
 
         if hit_x is Console.WRONG_INPUT or hit_y is Console.WRONG_INPUT:
             console_manager.press_enter()
