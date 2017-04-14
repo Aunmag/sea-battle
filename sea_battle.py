@@ -106,7 +106,7 @@ class Board(object):
                 cell = row[cell_index]
                 if not cls.is_monitoring and cell is CELL_SHIP_UNIT:
                     cell = CELL_SPACE_EMPTY
-                print(cell, end=' ')
+                cls.print_cell(cell)
 
             # Print mark between boards:
             print(row_index, end=' ')
@@ -115,7 +115,7 @@ class Board(object):
             row = cls.board_player.rows[row_index]
             for cell_index in range(cls.size):
                 cell = row[cell_index]
-                print(cell, end=' ')
+                cls.print_cell(cell)
 
             # Print right mark:
             print(row_index)
@@ -153,6 +153,23 @@ class Board(object):
         for n in range(cls.size):
             print(n, end=' ')
         print()
+
+    @classmethod
+    def print_cell(cls, cell):
+        color = console_manager.Color.DEFAULT
+
+        if cell is CELL_SPACE_EMPTY:
+            color = console_manager.Color.GRAY
+        elif cell is CELL_SPACE_HIT:
+            color = console_manager.Color.GRAY
+        elif cell is CELL_SHIP_DAMAGED:
+            color = console_manager.Color.READ + console_manager.Color.BOLD
+        elif cell is CELL_SHIP_DESTROYED:
+            color = console_manager.Color.GRAY
+
+        print(color, end='')
+        print(cell, end=' ')
+        print(console_manager.Color.DEFAULT, end='')
 
     @classmethod
     def print_marks_offset(cls):
@@ -412,6 +429,10 @@ class AI(object):
 
     def hit_position(self):
         hit_status = Board.board_player.check_is_any_ship_hit(self.hit_x, self.hit_y)
+        hit_position = f"at {self.hit_x}-{self.hit_y}"
+
+        color = console_manager.Color.DEFAULT
+        color_default = color
 
         if hit_status is HitStatus.DAMAGED:
             if self.is_chasing:
@@ -420,22 +441,20 @@ class AI(object):
                 self.is_chasing = True
                 self.chasing_x = self.hit_x
                 self.chasing_y = self.hit_y
-            message = "AI has damaged your ship {}."
+            color = console_manager.Color.YELLOW
+            message = f"AI has {color}damaged{color_default} your ship {hit_position}."
         elif hit_status is HitStatus.DESTROYED:
             self.memory_reset()
-            message = "AI has destroyed your ship {}."
+            color = console_manager.Color.READ
+            message = f"AI has {color}destroyed{color_default} your ship {hit_position}."
         else:
             self.is_turn = False
-            message = "AI has miss {}."
+            message = f"AI has miss {hit_position}."
 
         if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
             message = f"{message} And got addition turn."
 
-        message_coordinates = f"at {self.hit_x}-{self.hit_y}"
-        message = message.format(message_coordinates)
-        message += '\n'
-
-        self.last_message += message
+        self.last_message += message + '\n'
 
     def memory_reset(self):
         self.is_chasing = False
@@ -523,9 +542,13 @@ def game():
             is_player_turn = False
             message = "You've missed."
         elif hit_status is HitStatus.DAMAGED:
-            message = "You've damaged enemy ship."
+            color = console_manager.Color.BLUE
+            color_default = console_manager.Color.DEFAULT
+            message = f"You've {color}damaged{color_default} enemy ship."
         elif hit_status is HitStatus.DESTROYED:
-            message = "You've destroyed enemy ship!"
+            color = console_manager.Color.GREEN
+            color_default = console_manager.Color.DEFAULT
+            message = f"You've {color}destroyed{color_default} enemy ship!"
         elif hit_status is HitStatus.MISS_REPEATED:
             message = "You've already hit this location, change your choose."
         else:
