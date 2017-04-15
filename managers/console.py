@@ -1,6 +1,6 @@
 import os
 
-from constants import *
+import constants
 from managers import localization
 
 
@@ -66,7 +66,7 @@ def validate_integer(value):
         value = int(value)
     except ValueError:
         print(localization.language.have_to_enter_integers)
-        return Console.WRONG_INPUT
+        return constants.Console.WRONG_INPUT
     else:
         return value
 
@@ -74,32 +74,32 @@ def validate_integer(value):
 def validate_input(value, choices_quantity):
     value = validate_integer(value)
 
-    if value is Console.WRONG_INPUT:
+    if value is constants.Console.WRONG_INPUT:
         press_enter()
-        return Console.WRONG_INPUT
+        return constants.Console.WRONG_INPUT
     elif 0 < value <= choices_quantity:
         return value
     else:
         message = localization.language.chose_between.format(choices_quantity, value)
-        print(message)
-        press_enter()
-        return Console.WRONG_INPUT
+        press_enter(message=message)
+        return constants.Console.WRONG_INPUT
 
 
 def validate_input_coordinate(value, board_size):
     value = validate_integer(value)
 
-    if value is Console.WRONG_INPUT:
-        return Console.WRONG_INPUT
+    if value is constants.Console.WRONG_INPUT:
+        return constants.Console.WRONG_INPUT
     elif 0 <= value < board_size:
         return value
     else:
         print(localization.language.location_too_far)
-        return Console.WRONG_INPUT
+        return constants.Console.WRONG_INPUT
 
 
 def validate_iteration_number(value):
-    if value == ITERATION_LIMIT:
-        raise OverflowError(f"Iteration number exceeded. Limit is {ITERATION_LIMIT}.")
+    if value == constants.ITERATION_LIMIT:
+        message = f"Iteration number exceeded. Limit is {constants.ITERATION_LIMIT}."
+        raise OverflowError(message)
 
     return value + 1

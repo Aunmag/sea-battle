@@ -33,7 +33,7 @@ player_turn_error = "Ошибка при ходе игрока."
 at = "на"
 ai_miss = "ИИ промахнулся"
 ai_damage = f"ИИ {Color.YELLOW}повредил{Color.DEFAULT} ваш корабль"
-ai_destroy = f"ИИ {Color.READ}уничтожил{Color.DEFAULT} ваш корабль"
+ai_destroy = f"ИИ {Color.RED}уничтожил{Color.DEFAULT} ваш корабль"
 
 # End game:
 you_won = "Вы выиграли! Вы уничтожили все вражеские корабли!"

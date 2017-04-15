@@ -33,7 +33,7 @@ player_turn_error = "Error on player turn."
 at = "at"
 ai_miss = "AI has miss"
 ai_damage = f"AI has {Color.YELLOW}damaged{Color.DEFAULT} your ship"
-ai_destroy = f"AI has {Color.READ}destroyed{Color.DEFAULT} your ship"
+ai_destroy = f"AI has {Color.RED}destroyed{Color.DEFAULT} your ship"
 
 # End game:
 you_won = "You won! You've destroyed all enemy ships!"
