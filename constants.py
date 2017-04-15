@@ -37,9 +37,9 @@ class Cell(Enum):
 
 
 class Symbol(object):
-    SHIP = chr(65517)  # '￭' or 'D'
+    SHIP = chr(65517)  # 65517 or 'D'
     EMPTY = chr(1632)  # 1632, 1776, 183 or '.'
-    HIT = chr(65794)  # '𐄂' or 'X' or '*'
+    HIT = chr(65794)  # 65794 or 'X' or '*'
 
 
 STYLE = {
