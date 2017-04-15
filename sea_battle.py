@@ -4,8 +4,7 @@
 import random
 
 from constants import *
-from localization_manager import get_message
-import console_manager
+from managers import localization, console
 
 
 class Board(object):
@@ -92,7 +91,7 @@ class Board(object):
 
     @classmethod
     def print_boards(cls):
-        console_manager.clear()
+        console.clear()
 
         cls.print_headings()
         cls.print_marks_horizontal()
@@ -157,20 +156,20 @@ class Board(object):
 
     @classmethod
     def print_cell(cls, cell):
-        color = console_manager.Color.DEFAULT
+        color = console.Color.DEFAULT
 
         if cell is CELL_SPACE_EMPTY:
-            color = console_manager.Color.GRAY
+            color = console.Color.GRAY
         elif cell is CELL_SPACE_HIT:
-            color = console_manager.Color.GRAY
+            color = console.Color.GRAY
         elif cell is CELL_SHIP_DAMAGED:
-            color = console_manager.Color.READ + console_manager.Color.BOLD
+            color = console.Color.READ + console.Color.BOLD
         elif cell is CELL_SHIP_DESTROYED:
-            color = console_manager.Color.GRAY
+            color = console.Color.GRAY
 
         print(color, end='')
         print(cell, end=' ')
-        print(console_manager.Color.DEFAULT, end='')
+        print(console.Color.DEFAULT, end='')
 
     @classmethod
     def print_marks_offset(cls):
@@ -218,7 +217,7 @@ class Ship(object):
         spawn_attempt = 0
 
         while is_spawning:
-            spawn_attempt = console_manager.validate_iteration_number(spawn_attempt)
+            spawn_attempt = console.validate_iteration_number(spawn_attempt)
 
             self.axis_direction = random.choice((AxisDirection.X, AxisDirection.Y))
 
@@ -271,7 +270,7 @@ class Ship(object):
             b1 = self.x
             b2 = hit_x
         else:
-            console_manager.raise_wrong_axis_direction(self.axis_direction)
+            console.raise_wrong_axis_direction(self.axis_direction)
             return HitStatus.UNKNOWN
 
         if b1 == b2 and a1 <= a2 < a1 + self.size:
@@ -341,7 +340,7 @@ class AI(object):
             if self.is_super_ai:
                 self.choose_hit_position_strictly()
             elif self.is_chasing:
-                self.choose_hit_position_logicly()
+                self.choose_hit_position_logically()
             else:
                 self.choose_hit_position_randomly()
 
@@ -380,13 +379,13 @@ class AI(object):
             self.hit_x = x_hit
             self.hit_y = y_hit
 
-    def choose_hit_position_logicly(self):
+    def choose_hit_position_logically(self):
         iteration_number = 0
         chasing_direction_offset = 0
 
         is_searching = True
         while is_searching:
-            iteration_number = console_manager.validate_iteration_number(iteration_number)
+            iteration_number = console.validate_iteration_number(iteration_number)
 
             if not self.is_chasing_axis_successful:
                 self.chasing_axis = random.choice((AxisDirection.X, AxisDirection.Y))
@@ -430,10 +429,8 @@ class AI(object):
 
     def hit_position(self):
         hit_status = Board.board_player.check_is_any_ship_hit(self.hit_x, self.hit_y)
-        hit_position = f"at {self.hit_x}-{self.hit_y}"
-
-        color = console_manager.Color.DEFAULT
-        color_default = color
+        at = localization.language.at
+        hit_position = f"{at} {self.hit_x}-{self.hit_y}"
 
         if hit_status is HitStatus.DAMAGED:
             if self.is_chasing:
@@ -442,18 +439,19 @@ class AI(object):
                 self.is_chasing = True
                 self.chasing_x = self.hit_x
                 self.chasing_y = self.hit_y
-            color = console_manager.Color.YELLOW
-            message = f"AI has {color}damaged{color_default} your ship {hit_position}."
+            message = localization.language.ai_damage
         elif hit_status is HitStatus.DESTROYED:
             self.memory_reset()
-            color = console_manager.Color.READ
-            message = f"AI has {color}destroyed{color_default} your ship {hit_position}."
+            message = localization.language.ai_destroy
         else:
             self.is_turn = False
-            message = f"AI has miss {hit_position}."
+            message = localization.language.ai_miss
+
+        message = f"{message} {hit_position}."
 
         if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
-            message = f"{message} And got addition turn."
+            message_addition_turn = localization.language.addition_turn
+            message = f"{message} {message_addition_turn}"
 
         self.last_message += message + '\n'
 
@@ -482,7 +480,7 @@ def add_axis_offset(axis_direction, x, y, number):
     elif axis_direction is AxisDirection.Y:
         y += number
     else:
-        console_manager.raise_wrong_axis_direction(axis_direction)
+        console.raise_wrong_axis_direction(axis_direction)
 
     return x, y
 
@@ -498,13 +496,20 @@ Board.board_player = Board()
 def intro():
     Board.print_boards()
 
-    # message_intro = f"Welcome to the {TITLE} v{VERSION} by {AUTHOR}"
-    message_intro = get_message("welcome")
+    if localization.current_language is localization.Languages.RUSSIAN:
+        message_switch_language = "Switch to English language"
+        enum_switch_language = localization.Languages.ENGLISH
+    else:
+        message_switch_language = "Переключить на Русский язык"
+        enum_switch_language = localization.Languages.RUSSIAN
+
+    message_intro = localization.language.welcome
     message_intro = message_intro.format(TITLE, VERSION, AUTHOR)
-    input_value = console_manager.request_input(message_intro, (
-        get_message("shuffle"),
-        get_message("start"),
-        get_message("show_tips"),
+    input_value = console.request_input(message_intro, (
+        localization.language.shuffle_sips,
+        localization.language.start_game,
+        localization.language.show_tips,
+        message_switch_language,
     ))
 
     if input_value == 1:
@@ -513,9 +518,16 @@ def intro():
         global is_intro
         is_intro = False
     elif input_value == 3:
-        console_manager.clear()
-        print(f"### Description\n\n{DESCRIPTION}\n\n### Tips\n{TIPS}\n")
-        console_manager.press_enter(action="back to the menu")
+        console.clear()
+        print(
+            f"### {localization.language.description_title}"
+            f"\n\n{localization.language.description}\n\n"
+            f"### {localization.language.tips_title}"
+            f"\n\n{localization.language.tips}\n\n"
+        )
+        console.press_enter(message_action=localization.language.to_menu)
+    elif input_value == 4:
+        localization.load_language(enum_switch_language)
 
 
 def game():
@@ -526,43 +538,40 @@ def game():
         Board.print_boards()
         print(ai.last_message)
 
-        hit_input = input("Choose position to strike (type X-Y): ")
+        hit_input = input(localization.language.choose_position)
 
         if len(hit_input) < 2:
-            console_manager.press_enter(message="You have to enter X and Y (like 0-5).")
+            console.press_enter(message=localization.language.have_enter_x_y)
             continue
 
-        hit_x = console_manager.validate_input_coordinate(hit_input[0], Board.size)
-        hit_y = console_manager.validate_input_coordinate(hit_input[-1], Board.size)
+        hit_x = console.validate_input_coordinate(hit_input[0], Board.size)
+        hit_y = console.validate_input_coordinate(hit_input[-1], Board.size)
 
         if hit_x is Console.WRONG_INPUT or hit_y is Console.WRONG_INPUT:
-            console_manager.press_enter()
+            console.press_enter()
             continue
 
         hit_status = Board.board_ai.check_is_any_ship_hit(hit_x, hit_y)
 
         if hit_status is HitStatus.MISS:
             is_player_turn = False
-            message = "You've missed."
+            message = localization.language.you_miss
         elif hit_status is HitStatus.DAMAGED:
-            color = console_manager.Color.BLUE
-            color_default = console_manager.Color.DEFAULT
-            message = f"You've {color}damaged{color_default} enemy ship."
+            message = localization.language.you_damage
         elif hit_status is HitStatus.DESTROYED:
-            color = console_manager.Color.GREEN
-            color_default = console_manager.Color.DEFAULT
-            message = f"You've {color}destroyed{color_default} enemy ship!"
+            message = localization.language.you_destroy
         elif hit_status is HitStatus.MISS_REPEATED:
-            message = "You've already hit this location, change your choose."
+            message = localization.language.you_already_hit_this
         else:
-            message = "Error on player turn."
-            console_manager.raise_wrong_hit_status(hit_status, hit_x, hit_y, message)
+            message = localization.language.player_turn_error
+            console.raise_wrong_hit_status(hit_status, hit_x, hit_y, message)
 
         if hit_status is HitStatus.DAMAGED or hit_status is HitStatus.DESTROYED:
-            message = f"{message} And got addition turn."
+            message_addition_turn = localization.language.addition_turn
+            message = f"{message} {message_addition_turn}"
 
         print(message, end=' ')
-        console_manager.press_enter()
+        console.press_enter()
 
         if not Board.board_ai.is_onside:
             is_player_turn = False
@@ -583,13 +592,14 @@ if __name__ == "__main__":
         game()
 
     if not Board.board_ai.is_onside:
-        message = "You won! You've destroyed all enemy ships!"
+        message = localization.language.you_won
     elif not Board.board_player.is_onside:
-        message = "You were defeated. All your ships are destroyed."
+        message = localization.language.you_lose
     else:
         message = None
 
     Board.is_monitoring = True
     Board.print_boards()
 
-    console_manager.press_enter(message=message, action="exit game")
+    message_action = localization.language.to_exit
+    console.press_enter(message=message, message_action=message_action)
