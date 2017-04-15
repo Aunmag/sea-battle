@@ -32,7 +32,7 @@ class Board(object):
 
     def create_rows(self):
         for row in range(self.size):
-            self.rows.append([CELL_SPACE_EMPTY] * self.size)
+            self.rows.append([Cell.SPACE_EMPTY] * self.size)
 
     def generate_ships(self):
         for ship_type in self.ship_list:
@@ -45,11 +45,11 @@ class Board(object):
         hit_status = HitStatus.UNKNOWN
         cell = self.rows[y][x]
 
-        if cell is CELL_SPACE_EMPTY:
+        if cell is Cell.SPACE_EMPTY:
             hit_status = HitStatus.MISS
-        elif cell in (CELL_SPACE_HIT, CELL_SHIP_DAMAGED, CELL_SHIP_DESTROYED):
+        elif cell in (Cell.SPACE_HIT, Cell.SHIP_DAMAGED, Cell.SHIP_DESTROYED):
             hit_status = HitStatus.MISS_REPEATED
-        elif cell is CELL_SHIP_UNIT:
+        elif cell is Cell.SHIP_UNIT:
             for ship in self.ships:
                 ship_hit_status = ship.check_is_hit(x, y)
                 if ship_hit_status is not HitStatus.MISS:
@@ -57,7 +57,7 @@ class Board(object):
                     break
 
         if hit_status is HitStatus.MISS:
-            self.rows[y][x] = CELL_SPACE_HIT
+            self.rows[y][x] = Cell.SPACE_HIT
         elif hit_status is HitStatus.DESTROYED:
             self.update_status()
 
@@ -104,8 +104,8 @@ class Board(object):
             row = cls.board_ai.rows[row_index]
             for cell_index in range(cls.size):
                 cell = row[cell_index]
-                if not cls.is_monitoring and cell is CELL_SHIP_UNIT:
-                    cell = CELL_SPACE_EMPTY
+                if not cls.is_monitoring and cell is Cell.SHIP_UNIT:
+                    cell = Cell.SPACE_EMPTY
                 cls.print_cell(cell)
 
             # Print mark between boards:
@@ -156,20 +156,8 @@ class Board(object):
 
     @classmethod
     def print_cell(cls, cell):
-        color = console.Color.DEFAULT
-
-        if cell is CELL_SPACE_EMPTY:
-            color = console.Color.GRAY
-        elif cell is CELL_SPACE_HIT:
-            color = console.Color.GRAY
-        elif cell is CELL_SHIP_DAMAGED:
-            color = console.Color.READ + console.Color.BOLD
-        elif cell is CELL_SHIP_DESTROYED:
-            color = console.Color.GRAY
-
-        print(color, end='')
-        print(cell, end=' ')
-        print(console.Color.DEFAULT, end='')
+        cell_symbol, cell_color = STYLE[cell]
+        print(cell_color + cell_symbol + Color.DEFAULT, end=' ')
 
     @classmethod
     def print_marks_offset(cls):
@@ -250,7 +238,7 @@ class Ship(object):
                     is_y_on_board = 0 <= y_check < Board.size
                     if is_x_on_board and is_y_on_board:
                         cell = self.board.rows[y_check][x_check]
-                        if cell is CELL_SHIP_UNIT:
+                        if cell is Cell.SHIP_UNIT:
                             is_collision = True
                             return is_collision
 
@@ -289,12 +277,12 @@ class Ship(object):
     def draw_as_new(self):
         for n in range(self.size):
             x, y = add_axis_offset(self.axis_direction, self.x, self.y, n)
-            self.board.rows[y][x] = CELL_SHIP_UNIT
+            self.board.rows[y][x] = Cell.SHIP_UNIT
 
     def draw_as_destroyed(self):
         for n in range(self.size):
             x, y = add_axis_offset(self.axis_direction, self.x, self.y, n)
-            self.board.rows[y][x] = CELL_SHIP_DESTROYED
+            self.board.rows[y][x] = Cell.SHIP_DESTROYED
 
             for y_offset in OFFSETS:
                 for x_offset in OFFSETS:
@@ -302,11 +290,11 @@ class Ship(object):
                     y_neighbor = y + y_offset
                     if 0 <= x_neighbor < Board.size and 0 <= y_neighbor < Board.size:
                         cell = self.board.rows[y_neighbor][x_neighbor]
-                        if cell is CELL_SPACE_EMPTY:
-                            self.board.rows[y_neighbor][x_neighbor] = CELL_SPACE_HIT
+                        if cell is Cell.SPACE_EMPTY:
+                            self.board.rows[y_neighbor][x_neighbor] = Cell.SPACE_HIT
 
     def draw_damage(self, x, y):
-        self.board.rows[y][x] = CELL_SHIP_DAMAGED
+        self.board.rows[y][x] = Cell.SHIP_DAMAGED
 
 
 class AI(object):
@@ -405,11 +393,11 @@ class AI(object):
                 continue
 
             cell = Board.board_player.rows[test_y][test_x]
-            if cell is CELL_SPACE_EMPTY or cell is CELL_SHIP_UNIT:
+            if cell is Cell.SPACE_EMPTY or cell is Cell.SHIP_UNIT:
                 self.hit_x = test_x
                 self.hit_y = test_y
                 is_searching = False
-            elif cell is CELL_SPACE_HIT or cell is CELL_SHIP_DESTROYED:
+            elif cell is Cell.SPACE_HIT or cell is Cell.SHIP_DESTROYED:
                 self.chasing_direction = -self.chasing_direction  # Reverse direction
 
     def choose_hit_position_randomly(self):
@@ -421,7 +409,7 @@ class AI(object):
             y_hit = random.randrange(Board.size)
             x_hit = random.randrange(Board.size)
             cell = Board.board_player.rows[y_hit][x_hit]
-            if cell is CELL_SHIP_UNIT or cell is CELL_SPACE_EMPTY:
+            if cell is Cell.SHIP_UNIT or cell is Cell.SPACE_EMPTY:
                 is_guessing = False
 
         self.hit_x = x_hit
