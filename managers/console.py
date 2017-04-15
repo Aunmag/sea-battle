@@ -1,33 +1,15 @@
 import os
 
 from constants import *
+from managers import localization
 
 
-class Color(object):
+def press_enter(message=None, message_action=None):
+    if message_action is None:
+        message_action = localization.language.to_continue
 
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-    GRAY = "\033[2m"
-    READ = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    DEFAULT = "\033[0m"
-
-    @classmethod
-    def deactivate(cls):
-        cls.BOLD = ''
-        cls.UNDERLINE = ''
-        cls.GRAY = ''
-        cls.READ = ''
-        cls.GREEN = ''
-        cls.YELLOW = ''
-        cls.BLUE = ''
-        cls.DEFAULT = ''
-
-
-def press_enter(message=None, action="continue"):
-    message_press_enter = f"Press Enter to {action}... "
+    message_press_enter = localization.language.press_enter
+    message_press_enter = f"{message_press_enter} {message_action}... "
 
     if message is not None:
         message_press_enter = f"{message} {message_press_enter}"
@@ -64,7 +46,7 @@ def raise_wrong_hit_status(hit_status, x=None, y=None, details=None):
 
 def request_input(heading, choices):
     if not heading:
-        heading = "Choices"
+        heading = localization.language.choices
 
     message = f"### {heading}:"
 
@@ -72,7 +54,7 @@ def request_input(heading, choices):
         snipped = f"\n {number + 1}. {choice}"
         message += snipped
 
-    message += "\n\nChose an action and press Enter: "
+    message += "\n\n" + localization.language.chose_action + ": "
 
     input_value = input(message)
     input_value = validate_input(input_value, len(choices))
@@ -83,7 +65,7 @@ def validate_integer(value):
     try:
         value = int(value)
     except ValueError:
-        print("Error. You have to enter integers. Change your choice.")
+        print(localization.language.have_to_enter_integers)
         return Console.WRONG_INPUT
     else:
         return value
@@ -98,10 +80,7 @@ def validate_input(value, choices_quantity):
     elif 0 < value <= choices_quantity:
         return value
     else:
-        message = (
-            f"You can chose between 1 an {choices_quantity} inclusively both."
-            f"\nGot {value} instead. Please try again."
-        )
+        message = localization.language.chose_between.format(choices_quantity, value)
         print(message)
         press_enter()
         return Console.WRONG_INPUT
@@ -115,7 +94,7 @@ def validate_input_coordinate(value, board_size):
     elif 0 <= value < board_size:
         return value
     else:
-        print("Error! This location is too far to hit! Change your choose.")
+        print(localization.language.location_too_far)
         return Console.WRONG_INPUT
 
 
