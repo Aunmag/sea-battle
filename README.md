@@ -1,7 +1,7 @@
 # Sea Battle <img src="https://img.shields.io/badge/python-3.6-blue.svg?style=flat">
 
 ### About
-Sea Battle (battleship) - my first text-based game, which I'd started to develop at February 2016. While I was been learning GUI, I decided to make this test project to code practicing. And some time later I was back to have all done completely and tweak some defects.
+Sea Battle (battleship) - my first text-based game, which I'd started to develop at February 2016. While I have been learning GUI, I decided to make this test project to practice coding. After some time I came back to finish and correct some defects.
 
 Notice that you may not arrange your ships manually. In the begging you can only shuffle their position randomly.
 
