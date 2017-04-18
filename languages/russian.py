@@ -19,6 +19,9 @@ tips_title = "Советы"
 
 # Game-play:
 addition_turn = "Получен дополнительный ход."
+you = "Вы"
+ai = "ИИ"
+ships = "кораблей"
 
 # Player messages:
 choose_position = "Выберите позицию для удара (введите X-Y): "

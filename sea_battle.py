@@ -127,21 +127,21 @@ class Board(object):
     def print_headings(cls):
         cls.print_marks_offset()
 
-        def get_ship_message(ships_quantity):
-            if ships_quantity == 1:
-                return "ship"
-            else:
-                return "ships"
-
         ships_ai = Board.board_ai.alive_ships_number
         ships_player = Board.board_player.alive_ships_number
 
-        heading_ai = f"AI ({ships_ai} {get_ship_message(ships_ai)})"
-        heading_player = f"You ({ships_player} {get_ship_message(ships_player)})"
-        heading_player_offset = cls.size * 2 + cls.marks_offset - len(heading_ai)
-        indentation = ' ' * heading_player_offset
+        heading_ai = (
+            f"{localization.language.ai} "
+            f"({localization.language.ships}: {ships_ai})"
+        )
 
-        print(heading_ai, end=indentation)
+        heading_player = (
+            f"{localization.language.you} "
+            f"({localization.language.ships}: {ships_player})"
+        )
+
+        indentation = cls.size * 2 + cls.marks_offset - len(heading_ai)
+        print(heading_ai, end=(' ' * indentation))
         print(heading_player)
 
     @classmethod

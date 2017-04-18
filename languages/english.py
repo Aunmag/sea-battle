@@ -19,6 +19,9 @@ tips_title = "Tips"
 
 # Game-play:
 addition_turn = "And got addition turn."
+you = "You"
+ai = "AI"
+ships = "ships"
 
 # Player messages:
 choose_position = "Choose position to strike (type X-Y): "
